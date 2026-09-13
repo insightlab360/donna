@@ -17,75 +17,23 @@ interface WeekGridProps {
   onTaskClick: (task: Task) => void;
 }
 
+/**
+ * Same 7-column grid on every screen size, including mobile — deliberately not a
+ * stacked mobile layout. On a narrow screen this scrolls horizontally rather than
+ * reflowing, so the week always looks like the desktop grid.
+ */
 export function WeekGrid({ dates, today, tasks, onDayClick, onTaskClick }: WeekGridProps) {
   const spans = computeWeekSpans(dates, tasks);
   const laneCount = spans.reduce((max, s) => Math.max(max, s.lane + 1), 0);
 
   return (
-    <div>
-      {/* Mobile: days stack in one column, so a horizontal merged bar has no equivalent — each multi-day task is instead listed once, above the day-by-day cards. */}
-      <div className="sm:hidden">
-        {spans.length > 0 && (
-          <div className="mb-3 flex flex-col gap-1.5">
-            {spans.map(({ task }) => (
-              <button
-                key={task.id}
-                onClick={() => onTaskClick(task)}
-                className={cn("block w-full rounded-md px-2.5 py-2 text-left text-xs font-medium", CHIP_STYLE[task.status])}
-              >
-                {task.title}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="flex flex-col gap-3">
-          {dates.map((date, i) => {
-            const dayTasks = sortForPeriod(getTasksOnDate(tasks, date).filter((t) => !isMultiDayTask(t)));
-            const isToday = date === today;
-            return (
-              <div key={date} className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
-                <div
-                  onClick={() => onDayClick(date)}
-                  className={cn(
-                    "flex cursor-pointer items-center justify-between border-b border-neutral-100 px-2.5 py-2",
-                    isToday && "bg-black text-white"
-                  )}
-                >
-                  <span className="text-xs font-medium">{WEEKDAY_HEADERS[i]}</span>
-                  <span className="text-sm font-semibold">{Number(date.slice(8, 10))}</span>
-                </div>
-                <div className="min-h-[60px] p-1.5">
-                  {dayTasks.length === 0 ? (
-                    <p className="py-3 text-center text-[11px] text-neutral-300">-</p>
-                  ) : (
-                    dayTasks.map((task) => (
-                      <button
-                        key={task.id}
-                        onClick={() => onTaskClick(task)}
-                        className={cn("mb-1 block w-full rounded-md px-2 py-1.5 text-left", CHIP_STYLE[task.status])}
-                      >
-                        <p className="text-[10px] opacity-70">{formatTaskWhen(task)}</p>
-                        <p className="text-[11px] font-medium leading-[1.3]">{task.title}</p>
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Desktop: a real 7-column grid, structured like MonthGrid, so multi-day tasks can be drawn as bars spanning the columns they cover. */}
-      <div className="hidden overflow-hidden rounded-lg border border-neutral-200 bg-white sm:block">
+    <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+      <div className="min-w-[640px]">
         <div className="grid grid-cols-7 border-b border-neutral-200 bg-neutral-50">
           {dates.map((date, i) => {
             const isToday = date === today;
             return (
-              <div
-                key={date}
-                className={cn("px-2 py-2 text-center", isToday && "bg-black text-white")}
-              >
+              <div key={date} className={cn("px-2 py-2 text-center", isToday && "bg-black text-white")}>
                 <div className="text-[11px] font-medium">{WEEKDAY_HEADERS[i]}</div>
                 <div className="text-sm font-semibold">{Number(date.slice(8, 10))}</div>
               </div>
