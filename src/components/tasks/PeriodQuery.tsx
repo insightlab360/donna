@@ -14,11 +14,12 @@ import {
 import { formatTaskWhen, isDueInRange, projectDisplayName, sortForPeriod } from "@/lib/tasks-logic";
 import { WorkTypeBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { WorkTypeFilterBar, matchesWorkTypeFilter, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
 import { TaskFormDrawer } from "./TaskFormDrawer";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-type Preset = "today" | "tomorrow" | "thisWeek" | "nextWeek" | "thisMonth" | "year" | "custom";
+type Preset = "today" | "tomorrow" | "thisWeek" | "nextWeek" | "thisMonth" | "thisYear" | "year" | "custom";
 
 const PRESETS: { key: Preset; label: string }[] = [
   { key: "today", label: "오늘" },
@@ -26,6 +27,7 @@ const PRESETS: { key: Preset; label: string }[] = [
   { key: "thisWeek", label: "이번 주" },
   { key: "nextWeek", label: "다음 주" },
   { key: "thisMonth", label: "이번 달" },
+  { key: "thisYear", label: "올해" },
   { key: "year", label: "연도별" },
   { key: "custom", label: "직접 기간 선택" },
 ];
@@ -44,6 +46,8 @@ function rangeForPreset(preset: Preset, today: string, year: number): [string, s
       return [addDaysStr(startOfWeekMon(today), 7), addDaysStr(endOfWeekSun(today), 7)];
     case "thisMonth":
       return [startOfMonthStr(today), endOfMonthStr(today)];
+    case "thisYear":
+      return [`${today.slice(0, 4)}-01-01`, `${today.slice(0, 4)}-12-31`];
     case "year":
       return [`${year}-01-01`, `${year}-12-31`];
     default:
@@ -59,13 +63,16 @@ export function PeriodQuery() {
   const [customEnd, setCustomEnd] = useState(today);
   const [year, setYear] = useState(() => Number(today.slice(0, 4)));
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [workTypeFilter, setWorkTypeFilter] = useState<WorkTypeFilterValue>("all");
 
   const [rangeStart, rangeEnd] = preset === "custom" ? [customStart, customEnd] : rangeForPreset(preset, today, year);
 
   // Full work management: every status shows here (완료/드랍 포함), not just what's left to do.
   const results = useMemo(() => {
-    return sortForPeriod(tasks.filter((t) => isDueInRange(t, rangeStart, rangeEnd)));
-  }, [tasks, rangeStart, rangeEnd]);
+    return sortForPeriod(
+      tasks.filter((t) => isDueInRange(t, rangeStart, rangeEnd) && matchesWorkTypeFilter(t.work_type, workTypeFilter))
+    );
+  }, [tasks, rangeStart, rangeEnd, workTypeFilter]);
 
   return (
     <div>
@@ -82,6 +89,10 @@ export function PeriodQuery() {
             {p.label}
           </button>
         ))}
+      </div>
+
+      <div className="mb-3">
+        <WorkTypeFilterBar value={workTypeFilter} onChange={setWorkTypeFilter} />
       </div>
 
       {preset === "year" && (

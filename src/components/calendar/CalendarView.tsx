@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/Button";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { MonthGrid } from "./MonthGrid";
 import { WeekGrid } from "./WeekGrid";
+import { matchesWorkTypeFilter, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
 import type { Task } from "@/lib/types";
 
 type ViewMode = "month" | "week";
 
-export function CalendarView() {
+export function CalendarView({ workType }: { workType: WorkTypeFilterValue }) {
   // `tasks` (the full shared task list) is used only to notice when a mutation
   // happened elsewhere and the visible range should be refetched — the grid itself
   // renders from `rangeTasks`, which is scoped to just the dates on screen.
@@ -47,6 +48,11 @@ export function CalendarView() {
       cancelled = true;
     };
   }, [rangeStart, rangeEnd, fetchTasksInRange, tasks]);
+
+  const visibleTasks = useMemo(
+    () => rangeTasks.filter((t) => matchesWorkTypeFilter(t.work_type, workType)),
+    [rangeTasks, workType]
+  );
 
   function goPrev() {
     setAnchor(mode === "month" ? addMonthsStr(anchor, -1) : addDaysStr(anchor, -7));
@@ -100,7 +106,7 @@ export function CalendarView() {
         <MonthGrid
           dates={dates}
           today={today}
-          tasks={rangeTasks}
+          tasks={visibleTasks}
           anchorMonth={anchorMonthDate}
           onDayClick={setAddingDate}
           onTaskClick={setEditingTask}
@@ -110,7 +116,7 @@ export function CalendarView() {
           }}
         />
       ) : (
-        <WeekGrid dates={dates} today={today} tasks={rangeTasks} onDayClick={setAddingDate} onTaskClick={setEditingTask} />
+        <WeekGrid dates={dates} today={today} tasks={visibleTasks} onDayClick={setAddingDate} onTaskClick={setEditingTask} />
       )}
 
       <TaskFormDrawer open={!!editingTask} onOpenChange={(v) => !v && setEditingTask(null)} task={editingTask ?? undefined} />

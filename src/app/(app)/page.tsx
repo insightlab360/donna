@@ -20,13 +20,24 @@ import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { UndeterminedSection } from "@/components/tasks/UndeterminedSection";
 import { Button } from "@/components/ui/Button";
+import { WorkTypeFilterBar, matchesWorkTypeFilter, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
 
 export default function DashboardPage() {
-  const { tasks, projects, loading } = useData();
+  const { tasks: allTasks, projects: allProjects, loading } = useData();
   const { openPopup } = useTodayPopup();
   const [creating, setCreating] = useState(false);
+  const [workTypeFilter, setWorkTypeFilter] = useState<WorkTypeFilterValue>("all");
 
   const today = todayKST();
+
+  const tasks = useMemo(
+    () => allTasks.filter((t) => matchesWorkTypeFilter(t.work_type, workTypeFilter)),
+    [allTasks, workTypeFilter]
+  );
+  const projects = useMemo(
+    () => allProjects.filter((p) => matchesWorkTypeFilter(p.work_type, workTypeFilter)),
+    [allProjects, workTypeFilter]
+  );
 
   const todayTasks = useMemo(() => sortForPopup(getTasksOnDate(tasks, today)), [tasks, today]);
   const overdueTasks = useMemo(() => getOverdueTasks(tasks, today), [tasks, today]);
@@ -70,6 +81,10 @@ export default function DashboardPage() {
             + Task 추가
           </Button>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <WorkTypeFilterBar value={workTypeFilter} onChange={setWorkTypeFilter} />
       </div>
 
       {loading ? (
@@ -117,7 +132,7 @@ export default function DashboardPage() {
           </Card>
 
           <div className="lg:col-span-2">
-            <UndeterminedSection />
+            <UndeterminedSection workType={workTypeFilter} />
           </div>
         </div>
       )}

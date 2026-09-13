@@ -7,16 +7,19 @@ import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { ProjectFormDrawer } from "@/components/projects/ProjectFormDrawer";
 import { WorkTypeBadge } from "@/components/ui/Badge";
+import { matchesWorkTypeFilter, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
 import type { Task } from "@/lib/types";
 
-export function UndeterminedSection() {
+export function UndeterminedSection({ workType = "all" }: { workType?: WorkTypeFilterValue }) {
   const { tasks, projects } = useData();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
 
-  const undeterminedTasks = getUndeterminedTasks(tasks);
+  const undeterminedTasks = getUndeterminedTasks(tasks).filter((t) => matchesWorkTypeFilter(t.work_type, workType));
   const undeterminedProjects = sortProjectsForDisplay(
-    projects.filter((p) => p.end_date === null && p.status !== "완료" && p.status !== "드랍")
+    projects.filter(
+      (p) => p.end_date === null && p.status !== "완료" && p.status !== "드랍" && matchesWorkTypeFilter(p.work_type, workType)
+    )
   );
   const editingProject = projects.find((p) => p.id === editingProjectId) ?? null;
 

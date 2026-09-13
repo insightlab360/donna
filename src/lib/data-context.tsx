@@ -86,8 +86,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updateTask = useCallback(
     async (id: string, patch: Partial<TaskInput>) => {
+      // Optimistic: reflect the change immediately (status dropdowns etc. feel instant),
+      // then reconcile with — or roll back to — the server's response.
+      let previous: Task | undefined;
+      setTasks((prev) => {
+        previous = prev.find((t) => t.id === id);
+        return prev.map((t) => (t.id === id ? { ...t, ...patch } : t));
+      });
+
       const { data, error } = await supabase.from("tasks").update(patch).eq("id", id).select().single();
-      if (error) throw new Error(error.message);
+      if (error) {
+        if (previous) {
+          const rollback = previous;
+          setTasks((prev) => prev.map((t) => (t.id === id ? rollback : t)));
+        }
+        throw new Error(error.message);
+      }
 
       const task = data as Task;
       setTasks((prev) => prev.map((t) => (t.id === id ? task : t)));
@@ -128,13 +142,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updateProject = useCallback(
     async (id: string, patch: Partial<ProjectInput>) => {
+      let previous: Project | undefined;
+      setProjects((prev) => {
+        previous = prev.find((p) => p.id === id);
+        return prev.map((p) => (p.id === id ? { ...p, ...patch } : p));
+      });
+
       const { data, error } = await supabase
         .from("projects")
         .update(patch)
         .eq("id", id)
         .select()
         .single();
-      if (error) throw new Error(error.message);
+      if (error) {
+        if (previous) {
+          const rollback = previous;
+          setProjects((prev) => prev.map((p) => (p.id === id ? rollback : p)));
+        }
+        throw new Error(error.message);
+      }
 
       const project = data as Project;
       setProjects((prev) => prev.map((p) => (p.id === id ? project : p)));

@@ -1,6 +1,5 @@
 "use client";
 
-import { workTypeAbbr } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 import type { Task, TaskStatus } from "@/lib/types";
 
@@ -19,10 +18,13 @@ export function TaskChip({ task, onClick }: { task: Task; onClick: () => void })
         e.stopPropagation();
         onClick();
       }}
-      className={cn("w-full truncate rounded px-1.5 py-0.5 text-left text-[11px] leading-tight", CHIP_STYLE[task.status])}
+      className={cn(
+        "block max-h-[2.4em] w-full overflow-hidden break-words rounded px-1 py-0.5 text-left text-[11px] leading-tight",
+        CHIP_STYLE[task.status]
+      )}
       title={task.title}
     >
-      <span className="opacity-60">{workTypeAbbr(task.work_type)}</span> {task.title}
+      {task.title}
     </button>
   );
 }

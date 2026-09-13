@@ -5,6 +5,7 @@ import { DataProvider } from "@/lib/data-context";
 import { TodayPopupProvider } from "@/components/today/TodayPopupProvider";
 import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
+import { PullToRefresh } from "./PullToRefresh";
 import { periodRangeLabel, roleLabel } from "@/lib/membership/labels";
 import type { Profile } from "@/lib/types";
 
@@ -28,7 +29,9 @@ export function AppShell({ email, profile, children }: { email: string; profile:
                 {accountSummary && <p className="text-[11px] text-neutral-400">{accountSummary}</p>}
               </div>
             </header>
-            <main className="flex-1 pb-16 sm:pb-0">{children}</main>
+            <main className="flex-1 pb-16 sm:pb-0">
+              <PullToRefresh>{children}</PullToRefresh>
+            </main>
           </div>
           <MobileNav isAdmin={isAdmin} />
         </div>

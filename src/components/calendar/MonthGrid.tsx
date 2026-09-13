@@ -43,13 +43,13 @@ export function MonthGrid({ dates, today, tasks, anchorMonth, onDayClick, onTask
               key={date}
               onClick={() => onDayClick(date)}
               className={cn(
-                "min-h-[92px] cursor-pointer border-b border-r border-neutral-100 p-1.5 last:border-r-0",
+                "min-h-[132px] cursor-pointer border-b border-r border-neutral-100 p-1 last:border-r-0",
                 !inMonth && "bg-neutral-50/60"
               )}
             >
               <span
                 className={cn(
-                  "mb-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px]",
+                  "mb-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px]",
                   isToday ? "bg-black font-semibold text-white" : inMonth ? "text-neutral-700" : "text-neutral-300"
                 )}
               >

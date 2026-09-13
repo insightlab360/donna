@@ -3,7 +3,6 @@
 import { formatTaskWhen, getTasksOnDate, sortForPeriod } from "@/lib/tasks-logic";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/Badge";
-import { workTypeAbbr } from "@/lib/calendar";
 import type { Task } from "@/lib/types";
 
 const WEEKDAY_HEADERS = ["월", "화", "수", "목", "금", "토", "일"];
@@ -45,10 +44,8 @@ export function WeekGrid({ dates, today, tasks, onDayClick, onTaskClick }: WeekG
                     onClick={() => onTaskClick(task)}
                     className="mb-1 block w-full rounded-md border border-neutral-100 px-2 py-1.5 text-left hover:bg-neutral-50"
                   >
-                    <p className="text-[10px] text-neutral-400">
-                      {formatTaskWhen(task)} · {workTypeAbbr(task.work_type)}
-                    </p>
-                    <p className="truncate text-xs font-medium text-black">{task.title}</p>
+                    <p className="text-[10px] text-neutral-400">{formatTaskWhen(task)}</p>
+                    <p className="max-h-[2.6em] overflow-hidden break-words text-xs font-medium leading-tight text-black">{task.title}</p>
                     <StatusBadge status={task.status} className="mt-1" />
                   </button>
                 ))
