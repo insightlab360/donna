@@ -13,6 +13,7 @@ import {
   todayKST,
 } from "@/lib/date";
 import { WorkTypeBadge } from "@/components/ui/Badge";
+import { projectDisplayName } from "@/lib/tasks-logic";
 import type { WorkType } from "@/lib/types";
 
 type Preset = "today" | "thisWeek" | "thisMonth" | "custom";
@@ -41,7 +42,7 @@ interface ActivityEntry {
   id: string;
   createdAt: string;
   content: string;
-  kind: "할 일" | "프로젝트";
+  kind: "Task" | "프로젝트";
   title: string;
   workType: WorkType;
 }
@@ -62,13 +63,20 @@ export default function ActivityPage() {
     const taskEntries: ActivityEntry[] = taskNotes.flatMap((n) => {
       const task = tasks.find((t) => t.id === n.task_id);
       if (!task) return [];
-      return [{ id: n.id, createdAt: n.created_at, content: n.content, kind: "할 일" as const, title: task.title, workType: task.work_type }];
+      return [{ id: n.id, createdAt: n.created_at, content: n.content, kind: "Task" as const, title: task.title, workType: task.work_type }];
     });
     const projectEntries: ActivityEntry[] = projectNotes.flatMap((n) => {
       const project = projects.find((p) => p.id === n.project_id);
       if (!project) return [];
       return [
-        { id: n.id, createdAt: n.created_at, content: n.content, kind: "프로젝트" as const, title: project.name, workType: project.work_type },
+        {
+          id: n.id,
+          createdAt: n.created_at,
+          content: n.content,
+          kind: "프로젝트" as const,
+          title: projectDisplayName(project.name),
+          workType: project.work_type,
+        },
       ];
     });
     return [...taskEntries, ...projectEntries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -94,10 +102,10 @@ export default function ActivityPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-black">활동 로그</h1>
-          <p className="mt-1 text-sm text-neutral-400">할 일·프로젝트에 남긴 메모를 날짜순으로 모아봅니다.</p>
+          <p className="mt-1 text-sm text-neutral-400">Task·프로젝트에 남긴 메모를 날짜순으로 모아봅니다.</p>
         </div>
         <Link href="/tasks" className="text-xs text-neutral-400 hover:text-black">
-          할 일로 돌아가기
+Task로 돌아가기
         </Link>
       </div>
 

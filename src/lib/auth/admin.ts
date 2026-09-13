@@ -13,7 +13,8 @@ export async function getCurrentProfile(): Promise<{ user: User; profile: Profil
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+  // Every /api/admin/* route calls this — only role is ever checked, so only role is fetched.
+  const { data: profile } = await supabase.from("profiles").select("id, role").eq("id", user.id).maybeSingle();
   return { user, profile: (profile as Profile) ?? null };
 }
 

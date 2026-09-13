@@ -18,10 +18,10 @@ export function AdminShell({ isSuperAdmin, children }: { isSuperAdmin: boolean; 
   return (
     <div className="flex min-h-screen bg-neutral-50">
       <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 bg-white sm:flex">
-        <div className="px-5 py-6">
+        <Link href="/" className="block px-5 py-6">
           <p className="text-base font-semibold tracking-tight text-black">My Assistant Donna</p>
           <p className="text-xs text-neutral-500">관리자 콘솔</p>
-        </div>
+        </Link>
         <nav className="flex-1 px-3">
           {navItems.map((item) => {
             const active = pathname.startsWith(item.href);
@@ -52,7 +52,9 @@ export function AdminShell({ isSuperAdmin, children }: { isSuperAdmin: boolean; 
 
       <div className="flex min-h-screen flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 sm:hidden">
-          <p className="text-sm font-semibold tracking-tight text-black">My Assistant Donna</p>
+          <Link href="/" className="text-sm font-semibold tracking-tight text-black">
+            My Assistant Donna
+          </Link>
           <Link href="/" className="text-xs text-neutral-500">
             앱으로
           </Link>

@@ -7,7 +7,7 @@ const timeStr = z.string().regex(/^\d{2}:\d{2}$/, "시간 형식이 올바르지
 export const taskFormSchema = z
   .object({
     work_type: z.enum(WORK_TYPES),
-    title: z.string().trim().min(1, "할 일을 입력해주세요").max(200, "200자 이내로 입력해주세요"),
+    title: z.string().trim().min(1, "Task를 입력해주세요").max(200, "200자 이내로 입력해주세요"),
     project_id: z.string().uuid().nullable(),
     date_mode: z.enum(DATE_MODES),
     start_date: dateStr.nullable(),

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useData } from "@/lib/data-context";
-import { getUndeterminedTasks } from "@/lib/tasks-logic";
+import { getUndeterminedTasks, projectDisplayName, sortProjectsForDisplay } from "@/lib/tasks-logic";
 import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { ProjectFormDrawer } from "@/components/projects/ProjectFormDrawer";
@@ -15,8 +15,8 @@ export function UndeterminedSection() {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
 
   const undeterminedTasks = getUndeterminedTasks(tasks);
-  const undeterminedProjects = projects.filter(
-    (p) => p.end_date === null && p.status !== "완료" && p.status !== "드랍"
+  const undeterminedProjects = sortProjectsForDisplay(
+    projects.filter((p) => p.end_date === null && p.status !== "완료" && p.status !== "드랍")
   );
   const editingProject = projects.find((p) => p.id === editingProjectId) ?? null;
 
@@ -30,7 +30,7 @@ export function UndeterminedSection() {
 
       {undeterminedTasks.length > 0 && (
         <div className="mb-3">
-          <p className="mb-1 text-xs font-medium text-neutral-500">할 일 {undeterminedTasks.length}개</p>
+          <p className="mb-1 text-xs font-medium text-neutral-500">Task {undeterminedTasks.length}개</p>
           <div>
             {undeterminedTasks.map((task) => (
               <TaskRow key={task.id} task={task} quickStatus onClick={() => setEditingTask(task)} />
@@ -49,7 +49,7 @@ export function UndeterminedSection() {
                 onClick={() => setEditingProjectId(project.id)}
                 className="flex items-center justify-between rounded-md border border-neutral-100 px-3 py-2 text-left text-sm hover:bg-neutral-50"
               >
-                <span className="truncate font-medium text-black">{project.name}</span>
+                <span className="truncate font-medium text-black">{projectDisplayName(project.name)}</span>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <WorkTypeBadge workType={project.work_type} />
                   <span className="text-xs text-neutral-400">{project.status}</span>

@@ -1,16 +1,16 @@
 import { formatMonthDayKR, formatMonthDayWeekdayKR } from "@/lib/date";
-import { formatTaskWhen, isDueToday } from "@/lib/tasks-logic";
+import { formatTaskWhen, isDueToday, projectDisplayName } from "@/lib/tasks-logic";
 import type { Project, Task } from "@/lib/types";
 import { escapeHtml } from "./escapeHtml";
 
 export function dailyDigestSubject(dateStr: string): string {
-  return `[My Assistant Donna] ${formatMonthDayKR(dateStr)} 오늘의 할 일`;
+  return `[My Assistant Donna] ${formatMonthDayKR(dateStr)} 오늘의 Task`;
 }
 
 function taskLine(task: Task, project: Project | undefined, today: string): string {
   const when = escapeHtml(formatTaskWhen(task));
   const title = escapeHtml(task.title);
-  const meta = [task.work_type, project?.name]
+  const meta = [task.work_type, project ? projectDisplayName(project.name) : undefined]
     .filter((v): v is string => Boolean(v))
     .map(escapeHtml)
     .join(" · ");
@@ -43,7 +43,7 @@ export function dailyDigestHtml(params: {
     overdueTasks.length > 0
       ? `
       <table role="presentation" width="100%" style="margin-top:24px;border-top:2px solid #111;padding-top:12px;">
-        <tr><td style="font-size:13px;font-weight:700;color:#c0392b;padding-bottom:4px;">기한이 지난 할 일 ${overdueTasks.length}개</td></tr>
+        <tr><td style="font-size:13px;font-weight:700;color:#c0392b;padding-bottom:4px;">기한이 지난 Task ${overdueTasks.length}개</td></tr>
         ${overdueRows}
       </table>`
       : "";
@@ -51,7 +51,7 @@ export function dailyDigestHtml(params: {
   return `
   <div style="max-width:560px;margin:0 auto;padding:24px;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#111;">
     <p style="font-size:12px;color:#888;margin:0 0 4px;">${formatMonthDayWeekdayKR(dateStr)}</p>
-    <h1 style="font-size:18px;margin:0 0 16px;">오늘 해야 할 일이 ${tasks.length}개 있습니다.</h1>
+    <h1 style="font-size:18px;margin:0 0 16px;">오늘 해야 할 Task가 ${tasks.length}개 있습니다.</h1>
     <table role="presentation" width="100%">
       ${taskRows}
     </table>

@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useData } from "@/lib/data-context";
-import { computeProjectStats, sortForPopup } from "@/lib/tasks-logic";
+import { todayKST } from "@/lib/date";
+import { computeProjectStats, projectDisplayName, sortForPopup, sortProjectsForDisplay } from "@/lib/tasks-logic";
 import { ProjectFormDrawer } from "@/components/projects/ProjectFormDrawer";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { TaskRow } from "@/components/tasks/TaskRow";
@@ -10,35 +12,61 @@ import { Button } from "@/components/ui/Button";
 import { WorkTypeBadge } from "@/components/ui/Badge";
 import type { Project, Task } from "@/lib/types";
 
+function projectYear(project: Project): string {
+  return (project.start_date ?? project.created_at).slice(0, 4);
+}
+
 export default function ProjectsPage() {
   const { projects, tasks, projectNotes, loading, error } = useData();
   const [creating, setCreating] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [addingTaskFor, setAddingTaskFor] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [year, setYear] = useState<number | "all">(() => Number(todayKST().slice(0, 4)));
 
-  const items = useMemo(
-    () =>
-      projects.map((project) => {
-        const latestNote = projectNotes
-          .filter((n) => n.project_id === project.id)
-          .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-        return {
-          project,
-          stats: computeProjectStats(project, tasks),
-          projectTasks: sortForPopup(tasks.filter((t) => t.project_id === project.id)),
-          latestNote,
-        };
-      }),
-    [projects, tasks, projectNotes]
-  );
+  const items = useMemo(() => {
+    const yearProjects = projects.filter((project) => year === "all" || projectYear(project) === String(year));
+    return sortProjectsForDisplay(yearProjects).map((project) => {
+      const latestNote = projectNotes
+        .filter((n) => n.project_id === project.id)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+      return {
+        project,
+        stats: computeProjectStats(project, tasks),
+        projectTasks: sortForPopup(tasks.filter((t) => t.project_id === project.id)),
+        latestNote,
+      };
+    });
+  }, [projects, tasks, projectNotes, year]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold text-black">프로젝트</h1>
         <Button variant="primary" onClick={() => setCreating(true)}>
           + 프로젝트 추가
+        </Button>
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-center gap-1.5">
+        <button
+          onClick={() => setYear((y) => (y === "all" ? Number(todayKST().slice(0, 4)) - 1 : y - 1))}
+          className="rounded-md p-1.5 text-neutral-500 hover:bg-neutral-100"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <span className="min-w-[70px] text-center text-sm font-semibold text-black">{year === "all" ? "전체" : `${year}년`}</span>
+        <button
+          onClick={() => setYear((y) => (y === "all" ? Number(todayKST().slice(0, 4)) + 1 : y + 1))}
+          className="rounded-md p-1.5 text-neutral-500 hover:bg-neutral-100"
+        >
+          <ChevronRight size={18} />
+        </button>
+        <Button size="sm" variant="secondary" onClick={() => setYear(Number(todayKST().slice(0, 4)))}>
+          올해
+        </Button>
+        <Button size="sm" variant={year === "all" ? "primary" : "ghost"} onClick={() => setYear("all")}>
+          전체보기
         </Button>
       </div>
 
@@ -48,7 +76,9 @@ export default function ProjectsPage() {
         <p className="py-16 text-center text-sm text-neutral-400">불러오는 중...</p>
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-neutral-300 py-16 text-center">
-          <p className="text-sm text-neutral-400">등록된 프로젝트가 없습니다.</p>
+          <p className="text-sm text-neutral-400">
+            {year === "all" ? "등록된 프로젝트가 없습니다." : `${year}년에 등록된 프로젝트가 없습니다.`}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -57,7 +87,7 @@ export default function ProjectsPage() {
               <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h2 className="truncate text-sm font-semibold text-black">{project.name}</h2>
+                    <h2 className="truncate text-sm font-semibold text-black">{projectDisplayName(project.name)}</h2>
                     <span className="shrink-0 text-xs font-semibold text-black">{stats.progress}%</span>
                     <WorkTypeBadge workType={project.work_type} />
                     <span className="shrink-0 text-xs text-neutral-400">{project.status}</span>
@@ -66,7 +96,7 @@ export default function ProjectsPage() {
                 </div>
                 <div className="flex shrink-0 gap-1.5">
                   <Button size="sm" variant="ghost" onClick={() => setAddingTaskFor(project.id)}>
-                    + 할 일
+                    + Task
                   </Button>
                   <Button size="sm" variant="secondary" onClick={() => setEditingProject(project)}>
                     수정
@@ -79,7 +109,7 @@ export default function ProjectsPage() {
 
               <div className="border-t border-neutral-100 px-4">
                 {projectTasks.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-neutral-400">등록된 할 일이 없습니다.</p>
+                  <p className="py-6 text-center text-sm text-neutral-400">등록된 Task가 없습니다.</p>
                 ) : (
                   projectTasks.map((task) => (
                     <TaskRow key={task.id} task={task} quickStatus showDueBadge onClick={() => setEditingTask(task)} />

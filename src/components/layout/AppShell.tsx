@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { DataProvider } from "@/lib/data-context";
 import { TodayPopupProvider } from "@/components/today/TodayPopupProvider";
 import { Sidebar } from "./Sidebar";
@@ -19,7 +20,9 @@ export function AppShell({ email, profile, children }: { email: string; profile:
           <Sidebar email={email} accountSummary={accountSummary} isAdmin={isAdmin} />
           <div className="flex min-h-screen flex-1 flex-col">
             <header className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 sm:hidden">
-              <p className="text-sm font-semibold tracking-tight text-black">My Assistant Donna</p>
+              <Link href="/" className="text-sm font-semibold tracking-tight text-black">
+                My Assistant Donna
+              </Link>
               <div className="text-right">
                 <p className="truncate text-xs text-neutral-400">{email}</p>
                 {accountSummary && <p className="text-[11px] text-neutral-400">{accountSummary}</p>}

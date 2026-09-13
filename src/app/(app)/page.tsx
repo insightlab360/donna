@@ -5,7 +5,17 @@ import { useMemo, useState } from "react";
 import { useData } from "@/lib/data-context";
 import { useTodayPopup } from "@/components/today/TodayPopupProvider";
 import { endOfWeekSun, startOfWeekMon, todayKST, addDaysStr } from "@/lib/date";
-import { computeProjectStats, getOverdueTasks, getTasksOnDate, isDueInRange, isTaskOpen, sortForPeriod, sortForPopup } from "@/lib/tasks-logic";
+import {
+  computeProjectStats,
+  getOverdueTasks,
+  getTasksOnDate,
+  isDueInRange,
+  isTaskOpen,
+  projectDisplayName,
+  sortForPeriod,
+  sortForPopup,
+  sortProjectsForDisplay,
+} from "@/lib/tasks-logic";
 import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { UndeterminedSection } from "@/components/tasks/UndeterminedSection";
@@ -31,10 +41,14 @@ export default function DashboardPage() {
     return sortForPeriod(tasks.filter((t) => isTaskOpen(t) && isDueInRange(t, from, to)));
   }, [tasks, today]);
   const inProgressProjects = useMemo(
-    () => projects.filter((p) => p.status === "진행중").map((p) => ({ project: p, stats: computeProjectStats(p, tasks) })),
+    () =>
+      sortProjectsForDisplay(projects.filter((p) => p.status === "진행중")).map((p) => ({
+        project: p,
+        stats: computeProjectStats(p, tasks),
+      })),
     [projects, tasks]
   );
-  const incompleteCount = useMemo(() => tasks.filter(isTaskOpen).length, [tasks]);
+  const incompleteTasks = useMemo(() => sortForPeriod(tasks.filter(isTaskOpen)), [tasks]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-8">
@@ -42,7 +56,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-xl font-semibold text-black">오늘</h1>
           {!loading && todayTasks.length === 0 && (
-            <p className="mt-1 text-sm text-neutral-400">오늘 예정된 할 일이 없습니다.</p>
+            <p className="mt-1 text-sm text-neutral-400">오늘 예정된 Task가 없습니다.</p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -50,10 +64,10 @@ export default function DashboardPage() {
             <Button variant="secondary">활동 로그</Button>
           </Link>
           <Button variant="secondary" onClick={openPopup} disabled={todayTasks.length === 0}>
-            오늘의 할 일 보기
+            오늘의 Task 보기
           </Button>
           <Button variant="primary" onClick={() => setCreating(true)}>
-            + 할 일 추가
+            + Task 추가
           </Button>
         </div>
       </div>
@@ -62,20 +76,20 @@ export default function DashboardPage() {
         <p className="py-16 text-center text-sm text-neutral-400">불러오는 중...</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Card title="오늘의 할 일" count={todayTasks.length}>
-            <TaskList tasks={todayTasks.slice(0, 6)} emptyText="오늘 할 일이 없습니다." showDueBadge />
+          <Card title="오늘의 Task" count={todayTasks.length}>
+            <TaskList tasks={todayTasks.slice(0, 6)} emptyText="오늘 Task가 없습니다." showDueBadge />
           </Card>
 
-          <Card title="이번 주 할 일" count={weekTasks.length} href="/tasks">
-            <TaskList tasks={weekTasks.slice(0, 6)} emptyText="이번 주 할 일이 없습니다." showDueBadge />
+          <Card title="이번 주 Task" count={weekTasks.length} href="/tasks">
+            <TaskList tasks={weekTasks.slice(0, 6)} emptyText="이번 주 Task가 없습니다." showDueBadge />
           </Card>
 
-          <Card title="마감 임박 할 일" count={upcomingTasks.length} subtitle="3일 이내">
-            <TaskList tasks={upcomingTasks.slice(0, 6)} emptyText="마감 임박 할 일이 없습니다." showDueBadge />
+          <Card title="마감 임박 Task" count={upcomingTasks.length} subtitle="3일 이내">
+            <TaskList tasks={upcomingTasks.slice(0, 6)} emptyText="마감 임박 Task가 없습니다." showDueBadge />
           </Card>
 
-          <Card title="기한 지난 할 일" count={overdueTasks.length}>
-            <TaskList tasks={overdueTasks.slice(0, 6)} emptyText="기한이 지난 할 일이 없습니다." />
+          <Card title="기한 지난 Task" count={overdueTasks.length}>
+            <TaskList tasks={overdueTasks.slice(0, 6)} emptyText="기한이 지난 Task가 없습니다." />
           </Card>
 
           <Card title="진행 중 프로젝트" count={inProgressProjects.length} href="/projects" className="lg:col-span-2">
@@ -86,7 +100,7 @@ export default function DashboardPage() {
                 {inProgressProjects.map(({ project, stats }) => (
                   <div key={project.id} className="rounded-md border border-neutral-100 p-3">
                     <div className="flex items-center justify-between">
-                      <p className="truncate text-sm font-medium text-black">{project.name}</p>
+                      <p className="truncate text-sm font-medium text-black">{projectDisplayName(project.name)}</p>
                       <span className="text-xs font-medium text-neutral-500">{stats.progress}%</span>
                     </div>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
@@ -98,8 +112,8 @@ export default function DashboardPage() {
             )}
           </Card>
 
-          <Card title="완료되지 않은 할 일" count={incompleteCount} href="/tasks" className="lg:col-span-2">
-            <p className="text-sm text-neutral-500">아직 완료하지 않은 할 일이 총 {incompleteCount}개 있습니다.</p>
+          <Card title="완료되지 않은 Task" count={incompleteTasks.length} href="/tasks" className="lg:col-span-2">
+            <TaskList tasks={incompleteTasks.slice(0, 10)} emptyText="완료하지 않은 Task가 없습니다." showDueBadge />
           </Card>
 
           <div className="lg:col-span-2">

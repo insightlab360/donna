@@ -9,7 +9,7 @@ import { LogoutButton } from "./LogoutButton";
 const NAV_ITEMS = [
   { href: "/", label: "오늘", icon: Sun },
   { href: "/calendar", label: "캘린더", icon: CalendarDays },
-  { href: "/tasks", label: "할 일", icon: ListChecks },
+  { href: "/tasks", label: "Task", icon: ListChecks },
   { href: "/projects", label: "프로젝트", icon: FolderKanban },
 ];
 
@@ -26,10 +26,10 @@ export function Sidebar({
 
   return (
     <aside className="hidden sm:flex sm:w-56 sm:shrink-0 sm:flex-col sm:border-r sm:border-neutral-200 sm:bg-white">
-      <div className="px-5 py-6">
+      <Link href="/" className="block px-5 py-6">
         <p className="text-base font-semibold tracking-tight text-black">My Assistant Donna</p>
         <p className="text-xs text-neutral-500">나의 비서 도나</p>
-      </div>
+      </Link>
 
       <nav className="flex-1 px-3">
         {NAV_ITEMS.map((item) => {

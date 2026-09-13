@@ -10,6 +10,9 @@ import { usePagination } from "@/lib/usePagination";
 import type { MemberNote, PaymentRecord, Profile } from "@/lib/types";
 
 const PAGE_SIZE = 15;
+// Safety cap for the current member-base scale — once members/payments regularly
+// approach this, replace the client-side search/filter with a server-paginated query.
+const LIST_FETCH_LIMIT = 1000;
 
 export default function AdminMembersPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -23,9 +26,13 @@ export default function AdminMembersPage() {
   async function load() {
     const supabase = createClient();
     const [{ data: p }, { data: pay }, { data: n }] = await Promise.all([
-      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-      supabase.from("payment_history").select("*").order("created_at", { ascending: false }),
-      supabase.from("member_notes").select("*"),
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(LIST_FETCH_LIMIT),
+      supabase
+        .from("payment_history")
+        .select("id,user_id,is_trial,months,payment_status,paid_amount,refunded_amount,created_at")
+        .order("created_at", { ascending: false })
+        .limit(LIST_FETCH_LIMIT),
+      supabase.from("member_notes").select("user_id,memo1").limit(LIST_FETCH_LIMIT),
     ]);
     setProfiles((p as Profile[]) ?? []);
     setPayments((pay as PaymentRecord[]) ?? []);

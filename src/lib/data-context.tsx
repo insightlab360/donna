@@ -24,7 +24,11 @@ interface DataContextValue {
   updateProjectNote: (id: string, content: string) => Promise<ProjectNote>;
   deleteProjectNote: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
+  /** Tasks whose displayed range overlaps [start, end] — for the calendar, which should not load the user's entire task history. */
+  fetchTasksInRange: (start: string, end: string) => Promise<Task[]>;
 }
+
+const TASK_COLUMNS = "id,user_id,work_type,title,project_id,date_mode,start_date,start_time,end_date,end_time,due_date,status,created_at,updated_at";
 
 const DataContext = createContext<DataContextValue | null>(null);
 
@@ -40,8 +44,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const refresh = useCallback(async () => {
     setError(null);
     const [tasksRes, projectsRes, taskNotesRes, projectNotesRes] = await Promise.all([
-      supabase.from("tasks").select("*").order("due_date", { ascending: true }),
-      supabase.from("projects").select("*").order("created_at", { ascending: false }),
+      supabase.from("tasks").select(TASK_COLUMNS).order("due_date", { ascending: true }),
+      supabase.from("projects").select("id,user_id,name,work_type,start_date,end_date,status,created_at,updated_at").order("created_at", { ascending: false }),
       supabase.from("task_notes").select("*").order("created_at", { ascending: false }),
       supabase.from("project_notes").select("*").order("created_at", { ascending: false }),
     ]);
@@ -233,6 +237,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     [supabase]
   );
 
+  const fetchTasksInRange = useCallback(
+    async (start: string, end: string) => {
+      // Overlap test: the task's display window starts on/before `end` and ends
+      // (due_date, already coalesced to end_date by a DB trigger) on/after `start`.
+      // Tasks with date_mode 'none' have a null start_date/due_date and never match.
+      const { data, error } = await supabase
+        .from("tasks")
+        .select(TASK_COLUMNS)
+        .lte("start_date", end)
+        .gte("due_date", start)
+        .order("due_date", { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data as Task[]) ?? [];
+    },
+    [supabase]
+  );
+
   const value: DataContextValue = {
     tasks,
     projects,
@@ -253,6 +274,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateProjectNote,
     deleteProjectNote,
     refresh,
+    fetchTasksInRange,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

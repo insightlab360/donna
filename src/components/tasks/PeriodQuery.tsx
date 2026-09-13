@@ -11,12 +11,14 @@ import {
   startOfWeekMon,
   todayKST,
 } from "@/lib/date";
-import { formatTaskWhen, isDueInRange, sortForPeriod } from "@/lib/tasks-logic";
+import { formatTaskWhen, isDueInRange, projectDisplayName, sortForPeriod } from "@/lib/tasks-logic";
 import { WorkTypeBadge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { TaskFormDrawer } from "./TaskFormDrawer";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/types";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-type Preset = "today" | "tomorrow" | "thisWeek" | "nextWeek" | "thisMonth" | "custom";
+type Preset = "today" | "tomorrow" | "thisWeek" | "nextWeek" | "thisMonth" | "year" | "custom";
 
 const PRESETS: { key: Preset; label: string }[] = [
   { key: "today", label: "오늘" },
@@ -24,10 +26,11 @@ const PRESETS: { key: Preset; label: string }[] = [
   { key: "thisWeek", label: "이번 주" },
   { key: "nextWeek", label: "다음 주" },
   { key: "thisMonth", label: "이번 달" },
+  { key: "year", label: "연도별" },
   { key: "custom", label: "직접 기간 선택" },
 ];
 
-function rangeForPreset(preset: Preset, today: string): [string, string] {
+function rangeForPreset(preset: Preset, today: string, year: number): [string, string] {
   switch (preset) {
     case "today":
       return [today, today];
@@ -41,6 +44,8 @@ function rangeForPreset(preset: Preset, today: string): [string, string] {
       return [addDaysStr(startOfWeekMon(today), 7), addDaysStr(endOfWeekSun(today), 7)];
     case "thisMonth":
       return [startOfMonthStr(today), endOfMonthStr(today)];
+    case "year":
+      return [`${year}-01-01`, `${year}-12-31`];
     default:
       return [today, today];
   }
@@ -52,15 +57,14 @@ export function PeriodQuery() {
   const [preset, setPreset] = useState<Preset>("thisWeek");
   const [customStart, setCustomStart] = useState(today);
   const [customEnd, setCustomEnd] = useState(today);
+  const [year, setYear] = useState(() => Number(today.slice(0, 4)));
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const [rangeStart, rangeEnd] = preset === "custom" ? [customStart, customEnd] : rangeForPreset(preset, today);
+  const [rangeStart, rangeEnd] = preset === "custom" ? [customStart, customEnd] : rangeForPreset(preset, today, year);
 
+  // Full work management: every status shows here (완료/드랍 포함), not just what's left to do.
   const results = useMemo(() => {
-    const filtered = tasks.filter(
-      (t) => (t.status === "예정" || t.status === "진행중" || t.status === "보류") && isDueInRange(t, rangeStart, rangeEnd)
-    );
-    return sortForPeriod(filtered);
+    return sortForPeriod(tasks.filter((t) => isDueInRange(t, rangeStart, rangeEnd)));
   }, [tasks, rangeStart, rangeEnd]);
 
   return (
@@ -80,6 +84,21 @@ export function PeriodQuery() {
         ))}
       </div>
 
+      {preset === "year" && (
+        <div className="mb-4 flex flex-wrap items-center gap-1.5">
+          <button onClick={() => setYear((y) => y - 1)} className="rounded-md p-1.5 text-neutral-500 hover:bg-neutral-100">
+            <ChevronLeft size={18} />
+          </button>
+          <span className="min-w-[70px] text-center text-sm font-semibold text-black">{year}년</span>
+          <button onClick={() => setYear((y) => y + 1)} className="rounded-md p-1.5 text-neutral-500 hover:bg-neutral-100">
+            <ChevronRight size={18} />
+          </button>
+          <Button size="sm" variant="secondary" onClick={() => setYear(Number(today.slice(0, 4)))}>
+            올해
+          </Button>
+        </div>
+      )}
+
       {preset === "custom" && (
         <div className="mb-4 flex items-center gap-2">
           <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className="rounded-md border border-neutral-300 px-2.5 py-1.5 text-sm outline-none focus:border-black" />
@@ -96,7 +115,7 @@ export function PeriodQuery() {
         <p className="py-12 text-center text-sm text-neutral-400">불러오는 중...</p>
       ) : results.length === 0 ? (
         <div className="rounded-lg border border-dashed border-neutral-300 py-12 text-center">
-          <p className="text-sm text-neutral-400">해당 기간에 조회된 할 일이 없습니다.</p>
+          <p className="text-sm text-neutral-400">해당 기간에 조회된 Task가 없습니다.</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
@@ -112,9 +131,16 @@ export function PeriodQuery() {
                   <div className="flex items-center gap-2 text-xs text-neutral-500">
                     <span className="font-medium text-neutral-700">{formatTaskWhen(task)}</span>
                     <WorkTypeBadge workType={task.work_type} />
-                    {project && <span className="truncate">{project.name}</span>}
+                    {project && <span className="truncate">{projectDisplayName(project.name)}</span>}
                   </div>
-                  <p className="mt-0.5 truncate text-sm font-medium text-black">{task.title}</p>
+                  <p
+                    className={
+                      "mt-0.5 truncate text-sm font-medium " +
+                      (task.status === "완료" || task.status === "드랍" ? "text-neutral-400 line-through" : "text-black")
+                    }
+                  >
+                    {task.title}
+                  </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
                   <select

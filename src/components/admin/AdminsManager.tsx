@@ -1,35 +1,63 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import type { Profile, Role } from "@/lib/types";
 
+// Only the columns this screen renders — never the full profiles row.
+const ADMIN_COLUMNS = "id,email,name,role,created_at";
+
 export function AdminsManager({ currentUserId }: { currentUserId: string }) {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [admins, setAdmins] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  async function load() {
+  async function loadAdmins() {
     const supabase = createClient();
-    const { data } = await supabase.from("profiles").select("*").order("created_at", { ascending: true });
-    setProfiles((data as Profile[]) ?? []);
+    // Server-side filtered to admin/super_admin rows — the whole user base is
+    // never loaded into the browser just to find the handful of admins.
+    const { data } = await supabase
+      .from("profiles")
+      .select(ADMIN_COLUMNS)
+      .in("role", ["admin", "super_admin"])
+      .order("created_at", { ascending: true });
+    setAdmins((data as Profile[]) ?? []);
     setLoading(false);
   }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial fetch on mount
-    load();
+    loadAdmins();
   }, []);
 
-  const admins = useMemo(() => profiles.filter((p) => p.role === "admin" || p.role === "super_admin"), [profiles]);
-  const searchResults = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return [];
-    return profiles.filter((p) => p.role === "user" && ((p.name ?? "").toLowerCase().includes(q) || p.email.toLowerCase().includes(q))).slice(0, 8);
-  }, [profiles, search]);
+  // Debounced server-side search (max 8 rows) instead of preloading every user to filter client-side.
+  useEffect(() => {
+    const q = search.trim().replace(/[,()%*]/g, "");
+    if (!q) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing local results to match the now-empty search box, not a cascading update
+      setSearchResults([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("profiles")
+        .select(ADMIN_COLUMNS)
+        .eq("role", "user")
+        .or(`name.ilike.%${q}%,email.ilike.%${q}%`)
+        .limit(8);
+      if (!cancelled) setSearchResults((data as Profile[]) ?? []);
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [search]);
 
   async function changeRole(userId: string, role: Role) {
     setBusyId(userId);
@@ -42,7 +70,8 @@ export function AdminsManager({ currentUserId }: { currentUserId: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "변경에 실패했습니다");
-      await load();
+      setSearch("");
+      await loadAdmins();
     } catch (err) {
       setError(err instanceof Error ? err.message : "변경에 실패했습니다");
     } finally {

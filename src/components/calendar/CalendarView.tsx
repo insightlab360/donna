@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useData } from "@/lib/data-context";
 import { getMonthGridDates, getWeekDates } from "@/lib/calendar";
@@ -15,16 +15,38 @@ import type { Task } from "@/lib/types";
 type ViewMode = "month" | "week";
 
 export function CalendarView() {
-  const { tasks } = useData();
+  // `tasks` (the full shared task list) is used only to notice when a mutation
+  // happened elsewhere and the visible range should be refetched — the grid itself
+  // renders from `rangeTasks`, which is scoped to just the dates on screen.
+  const { tasks, fetchTasksInRange } = useData();
   const [mode, setMode] = useState<ViewMode>("month");
   const [anchor, setAnchor] = useState(todayKST());
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [addingDate, setAddingDate] = useState<string | null>(null);
+  const [rangeTasks, setRangeTasks] = useState<Task[]>([]);
 
   const today = todayKST();
   const dates = useMemo(() => (mode === "month" ? getMonthGridDates(anchor) : getWeekDates(anchor)), [mode, anchor]);
+  const rangeStart = dates[0];
+  const rangeEnd = dates[dates.length - 1];
   const anchorMonthDate = mode === "month" ? startOfMonthStr(anchor) : anchor;
   const [year, monthNum] = anchorMonthDate.split("-");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const result = await fetchTasksInRange(rangeStart, rangeEnd);
+        if (!cancelled) setRangeTasks(result);
+      } catch {
+        if (!cancelled) setRangeTasks([]);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [rangeStart, rangeEnd, fetchTasksInRange, tasks]);
 
   function goPrev() {
     setAnchor(mode === "month" ? addMonthsStr(anchor, -1) : addDaysStr(anchor, -7));
@@ -78,7 +100,7 @@ export function CalendarView() {
         <MonthGrid
           dates={dates}
           today={today}
-          tasks={tasks}
+          tasks={rangeTasks}
           anchorMonth={anchorMonthDate}
           onDayClick={setAddingDate}
           onTaskClick={setEditingTask}
@@ -88,7 +110,7 @@ export function CalendarView() {
           }}
         />
       ) : (
-        <WeekGrid dates={dates} today={today} tasks={tasks} onDayClick={setAddingDate} onTaskClick={setEditingTask} />
+        <WeekGrid dates={dates} today={today} tasks={rangeTasks} onDayClick={setAddingDate} onTaskClick={setEditingTask} />
       )}
 
       <TaskFormDrawer open={!!editingTask} onOpenChange={(v) => !v && setEditingTask(null)} task={editingTask ?? undefined} />

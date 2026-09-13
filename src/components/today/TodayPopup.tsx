@@ -32,16 +32,16 @@ export function TodayPopup({ open, onOpenChange }: { open: boolean; onOpenChange
               sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-full sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-h-[80vh] sm:rounded-2xl"
           >
             <div className="shrink-0 border-b border-neutral-200 px-5 py-4">
-              <Dialog.Title className="text-lg font-semibold text-black">오늘의 할 일</Dialog.Title>
+              <Dialog.Title className="text-lg font-semibold text-black">오늘의 Task</Dialog.Title>
               <Dialog.Description className="mt-0.5 text-sm text-neutral-500">
-                {formatMonthDayWeekdayKR(today)} · 오늘의 할 일 {todayTasks.length}개
+                {formatMonthDayWeekdayKR(today)} · 오늘의 Task {todayTasks.length}개
               </Dialog.Description>
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-3">
               {overdueTasks.length > 0 && (
                 <div className="mb-4">
-                  <p className="mb-1 text-xs font-semibold text-red-600">기한이 지난 할 일 {overdueTasks.length}개</p>
+                  <p className="mb-1 text-xs font-semibold text-red-600">기한이 지난 Task {overdueTasks.length}개</p>
                   <div className="rounded-md border border-red-100 bg-red-50/50 px-2">
                     {overdueTasks.map((task) => (
                       <TaskRow key={task.id} task={task} quickStatus onClick={() => setEditingTask(task)} />
@@ -51,7 +51,7 @@ export function TodayPopup({ open, onOpenChange }: { open: boolean; onOpenChange
               )}
 
               {todayTasks.length === 0 ? (
-                <p className="py-8 text-center text-sm text-neutral-400">오늘 예정된 할 일이 없습니다.</p>
+                <p className="py-8 text-center text-sm text-neutral-400">오늘 예정된 Task가 없습니다.</p>
               ) : (
                 <div>
                   {todayTasks.map((task) => (

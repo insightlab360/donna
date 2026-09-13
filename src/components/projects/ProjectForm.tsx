@@ -64,7 +64,7 @@ export function ProjectForm({ project, onDone }: ProjectFormProps) {
 
   async function handleDelete() {
     if (!project) return;
-    if (!window.confirm("이 프로젝트를 삭제하시겠습니까? 연결된 할 일의 프로젝트 연결이 해제됩니다.")) return;
+    if (!window.confirm("이 프로젝트를 삭제하시겠습니까? 연결된 Task의 프로젝트 연결이 해제됩니다.")) return;
     setSubmitting(true);
     try {
       await deleteProject(project.id);

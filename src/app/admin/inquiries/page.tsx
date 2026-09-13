@@ -8,6 +8,9 @@ import { usePagination } from "@/lib/usePagination";
 import { INQUIRY_CATEGORIES, INQUIRY_STATUSES, type InquiryCategory, type InquiryStatus, type Profile, type SupportInquiry } from "@/lib/types";
 
 const PAGE_SIZE = 15;
+// Safety cap for the current member-base scale — once inquiries/profiles regularly
+// approach this, replace the client-side search/filter with a server-paginated query.
+const LIST_FETCH_LIMIT = 1000;
 
 export default function AdminInquiriesPage() {
   const [inquiries, setInquiries] = useState<SupportInquiry[]>([]);
@@ -21,8 +24,8 @@ export default function AdminInquiriesPage() {
   async function load() {
     const supabase = createClient();
     const [{ data: inq }, { data: p }] = await Promise.all([
-      supabase.from("support_inquiries").select("*").order("created_at", { ascending: false }),
-      supabase.from("profiles").select("*"),
+      supabase.from("support_inquiries").select("*").order("created_at", { ascending: false }).limit(LIST_FETCH_LIMIT),
+      supabase.from("profiles").select("id,name,email").limit(LIST_FETCH_LIMIT),
     ]);
     setInquiries((inq as SupportInquiry[]) ?? []);
     setProfiles((p as Profile[]) ?? []);

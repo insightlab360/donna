@@ -14,7 +14,7 @@ interface TaskFormDrawerProps {
 
 export function TaskFormDrawer({ open, onOpenChange, task, initialDate, initialProjectId }: TaskFormDrawerProps) {
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} title={task ? "할 일 수정" : "할 일 추가"}>
+    <Drawer open={open} onOpenChange={onOpenChange} title={task ? "Task 수정" : "Task 추가"}>
       {open && (
         <TaskForm
           key={task?.id ?? "new"}

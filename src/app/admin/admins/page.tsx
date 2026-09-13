@@ -10,7 +10,7 @@ export default async function AdminAdminsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profileRow } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+  const { data: profileRow } = await supabase.from("profiles").select("id, role").eq("id", user.id).maybeSingle();
   const profile = profileRow as Profile | null;
   if (!profile || profile.role !== "super_admin") {
     redirect("/admin/members");

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/", label: "오늘", icon: Sun },
   { href: "/calendar", label: "캘린더", icon: CalendarDays },
-  { href: "/tasks", label: "할 일", icon: ListChecks },
+  { href: "/tasks", label: "Task", icon: ListChecks },
   { href: "/projects", label: "프로젝트", icon: FolderKanban },
   { href: "/settings", label: "설정", icon: Settings },
 ];

@@ -14,7 +14,7 @@ export default function CalendarPage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-black">캘린더</h1>
         <Button variant="primary" onClick={() => setCreating(true)}>
-          + 할 일 추가
+          + Task 추가
         </Button>
       </div>
 

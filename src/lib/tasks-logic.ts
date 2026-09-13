@@ -1,5 +1,10 @@
 import { compareDateStr, formatShortDateRange, formatTimeOrNone, isDateInRange, todayKST } from "./date";
-import type { Project, ProjectStats, Task, TaskStatus } from "./types";
+import type { Project, ProjectStats, Task, WorkType } from "./types";
+
+/** "프로젝트: 이름" — used anywhere a project's name is shown so it can't be mistaken for a Task title. */
+export function projectDisplayName(name: string): string {
+  return `프로젝트: ${name}`;
+}
 
 /** How a task's date/time should read in a list row, matching the spec's display examples. */
 export function formatTaskWhen(task: Task): string {
@@ -63,35 +68,12 @@ export function isDueInRange(task: Task, start: string, end: string): boolean {
   return task.due_date !== null && isDateInRange(task.due_date, start, end);
 }
 
-const POPUP_STATUS_ORDER: Record<TaskStatus, number> = {
-  진행중: 0,
-  예정: 1,
-  보류: 2,
-  완료: 3,
-  드랍: 4,
+/** Canonical display order across every Task/Project list in the app: 업무(회사) > 개인프로젝트 > 개인. */
+const WORK_TYPE_ORDER: Record<WorkType, number> = {
+  회사: 0,
+  개인프로젝트: 1,
+  개인: 2,
 };
-
-/** Sort for the "today briefing" popup: open work first, then by time, then newest first. */
-export function sortForPopup(tasks: Task[]): Task[] {
-  return [...tasks].sort((a, b) => {
-    const statusDiff = POPUP_STATUS_ORDER[a.status] - POPUP_STATUS_ORDER[b.status];
-    if (statusDiff !== 0) return statusDiff;
-
-    const timeDiff = compareOptionalTime(a.start_time, b.start_time);
-    if (timeDiff !== 0) return timeDiff;
-
-    return b.created_at.localeCompare(a.created_at);
-  });
-}
-
-/** Sort for period lookups: due date first, then time, undated last. */
-export function sortForPeriod(tasks: Task[]): Task[] {
-  return [...tasks].sort((a, b) => {
-    const dueDiff = compareOptionalDate(a.due_date, b.due_date);
-    if (dueDiff !== 0) return dueDiff;
-    return compareOptionalTime(a.start_time, b.start_time);
-  });
-}
 
 function compareOptionalDate(a: string | null, b: string | null): number {
   if (a === b) return 0;
@@ -100,11 +82,33 @@ function compareOptionalDate(a: string | null, b: string | null): number {
   return compareDateStr(a, b);
 }
 
-function compareOptionalTime(a: string | null, b: string | null): number {
-  if (a === b) return 0;
-  if (a === null) return 1;
-  if (b === null) return -1;
-  return a.localeCompare(b);
+function compareTaskDisplayOrder(a: Task, b: Task): number {
+  const workDiff = WORK_TYPE_ORDER[a.work_type] - WORK_TYPE_ORDER[b.work_type];
+  if (workDiff !== 0) return workDiff;
+  const dueDiff = compareOptionalDate(a.due_date, b.due_date);
+  if (dueDiff !== 0) return dueDiff;
+  return a.title.localeCompare(b.title, "ko");
+}
+
+/** Sort for the "today briefing" popup and other snapshot views: 업무>개인프로젝트>개인, then 마감일, then 이름(가나다순). */
+export function sortForPopup(tasks: Task[]): Task[] {
+  return [...tasks].sort(compareTaskDisplayOrder);
+}
+
+/** Sort for period/list views — same ordering as sortForPopup. */
+export function sortForPeriod(tasks: Task[]): Task[] {
+  return [...tasks].sort(compareTaskDisplayOrder);
+}
+
+/** Same 업무>개인프로젝트>개인 → 마감일(종료일) → 이름(가나다순) ordering, for Project lists. */
+export function sortProjectsForDisplay(projects: Project[]): Project[] {
+  return [...projects].sort((a, b) => {
+    const workDiff = WORK_TYPE_ORDER[a.work_type] - WORK_TYPE_ORDER[b.work_type];
+    if (workDiff !== 0) return workDiff;
+    const dueDiff = compareOptionalDate(a.end_date, b.end_date);
+    if (dueDiff !== 0) return dueDiff;
+    return a.name.localeCompare(b.name, "ko");
+  });
 }
 
 export function computeProjectStats(project: Project, allTasks: Task[]): ProjectStats {

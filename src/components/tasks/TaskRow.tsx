@@ -1,7 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
-import { formatTaskWhen, isDueToday } from "@/lib/tasks-logic";
+import { formatTaskWhen, isDueToday, projectDisplayName } from "@/lib/tasks-logic";
 import { todayKST } from "@/lib/date";
 import { StatusBadge, WorkTypeBadge } from "@/components/ui/Badge";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/types";
@@ -36,7 +36,7 @@ export function TaskRow({ task, onClick, quickStatus, showDueBadge }: TaskRowPro
         <p className="mt-0.5 truncate text-sm font-medium text-black">{task.title}</p>
         <div className="mt-1 flex items-center gap-1.5 text-xs text-neutral-500">
           <WorkTypeBadge workType={task.work_type} />
-          {project && <span className="truncate">{project.name}</span>}
+          {project && <span className="truncate">{projectDisplayName(project.name)}</span>}
         </div>
         {latestNote && <p className="mt-1 truncate text-xs italic text-neutral-400">메모: {latestNote.content}</p>}
       </div>

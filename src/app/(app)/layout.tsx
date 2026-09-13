@@ -16,7 +16,11 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
     redirect("/login");
   }
 
-  const { data: profileRow } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+  const { data: profileRow } = await supabase
+    .from("profiles")
+    .select("id, role, membership_status, unlimited, access_start_at, access_end_at")
+    .eq("id", user.id)
+    .maybeSingle();
   const profile = profileRow as Profile | null;
   const isAdmin = profile?.role === "admin" || profile?.role === "super_admin";
 

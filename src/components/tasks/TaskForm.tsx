@@ -5,6 +5,7 @@ import { useData } from "@/lib/data-context";
 import { todayKST } from "@/lib/date";
 import { TASK_STATUSES, WORK_TYPES, type Task, type TaskStatus, type WorkType } from "@/lib/types";
 import { taskFormSchema } from "@/lib/validation";
+import { sortProjectsForDisplay } from "@/lib/tasks-logic";
 import { Button } from "@/components/ui/Button";
 import { NotesSection } from "@/components/notes/NotesSection";
 
@@ -129,7 +130,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
 
   async function handleDelete() {
     if (!task) return;
-    if (!window.confirm("이 할 일을 삭제하시겠습니까?")) return;
+    if (!window.confirm("이 Task를 삭제하시겠습니까?")) return;
     setSubmitting(true);
     try {
       await deleteTask(task.id);
@@ -162,12 +163,12 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
         </div>
       </Field>
 
-      <Field label="할 일" error={errors.title}>
+      <Field label="Task" error={errors.title}>
         <input
           autoFocus
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="할 일을 입력하세요"
+          placeholder="Task를 입력하세요"
           className={inputClass(!!errors.title)}
         />
       </Field>
@@ -221,7 +222,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
             className={inputClass(false)}
           >
             <option value="">없음</option>
-            {projects.map((p) => (
+            {sortProjectsForDisplay(projects).map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>

@@ -11,9 +11,9 @@ export default function TasksPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-black">할 일</h1>
+        <h1 className="text-xl font-semibold text-black">Task</h1>
         <Button variant="primary" onClick={() => setCreating(true)}>
-          + 할 일 추가
+          + Task 추가
         </Button>
       </div>
 
