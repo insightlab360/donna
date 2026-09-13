@@ -6,7 +6,7 @@ import { CHIP_STYLE } from "./TaskChip";
 import { computeWeekSpans } from "./weekSpans";
 import type { Task } from "@/lib/types";
 
-const WEEKDAY_HEADERS = ["일", "월", "화", "수", "목", "금", "토"];
+const WEEKDAY_HEADERS = ["월", "화", "수", "목", "금", "토", "일"];
 const LANE_HEIGHT = 20;
 
 interface WeekGridProps {
