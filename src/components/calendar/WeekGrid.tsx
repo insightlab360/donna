@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/Badge";
 import type { Task } from "@/lib/types";
 
-const WEEKDAY_HEADERS = ["월", "화", "수", "목", "금", "토", "일"];
+const WEEKDAY_HEADERS = ["일", "월", "화", "수", "목", "금", "토"];
 
 interface WeekGridProps {
   dates: string[];

@@ -44,6 +44,16 @@ export function isTaskUndetermined(task: Task): boolean {
   return task.date_mode === "none";
 }
 
+/** A range task that actually spans more than one calendar day — shown as one merged bar on the month grid instead of a chip repeated in every day it touches. */
+export function isMultiDayTask(task: Task): boolean {
+  return (
+    (task.date_mode === "date_range" || task.date_mode === "datetime_range") &&
+    task.start_date !== null &&
+    task.end_date !== null &&
+    task.end_date !== task.start_date
+  );
+}
+
 /** Open tasks with no date at all — shown in their own "기한 미정" list, never on the calendar or in today/period views. */
 export function getUndeterminedTasks(tasks: Task[]): Task[] {
   return sortForPopup(tasks.filter((t) => isTaskUndetermined(t) && isTaskOpen(t)));

@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { Task, TaskStatus } from "@/lib/types";
 
-const CHIP_STYLE: Record<TaskStatus, string> = {
+export const CHIP_STYLE: Record<TaskStatus, string> = {
   예정: "border border-neutral-300 bg-white text-neutral-700",
   진행중: "bg-black text-white font-medium",
   완료: "bg-neutral-100 text-neutral-400 line-through",

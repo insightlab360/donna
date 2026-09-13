@@ -67,6 +67,15 @@ export function endOfWeekSun(dateStr: string): string {
   return addDaysStr(startOfWeekMon(dateStr), 6);
 }
 
+/** Sunday-first week boundaries — used by the calendar grid, which starts its week on Sunday (unlike the Mon-Sun "이번 주" business-week used for filtering). */
+export function startOfWeekSun(dateStr: string): string {
+  return addDaysStr(dateStr, -weekdayOf(dateStr));
+}
+
+export function endOfWeekSat(dateStr: string): string {
+  return addDaysStr(startOfWeekSun(dateStr), 6);
+}
+
 export function startOfMonthStr(dateStr: string): string {
   const d = parseDateOnly(dateStr);
   return toDateOnlyString(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)));
