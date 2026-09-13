@@ -19,7 +19,7 @@ export function TaskChip({ task, onClick }: { task: Task; onClick: () => void })
         onClick();
       }}
       className={cn(
-        "block max-h-[2.4em] w-full overflow-hidden break-words rounded px-1 py-0.5 text-left text-[11px] leading-tight",
+        "block max-h-[2.6em] w-full overflow-hidden break-words rounded px-0.5 py-0.5 text-left text-[10px] leading-[1.3]",
         CHIP_STYLE[task.status]
       )}
       title={task.title}

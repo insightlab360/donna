@@ -12,7 +12,7 @@ export default function CalendarPage() {
   const [workTypeFilter, setWorkTypeFilter] = useState<WorkTypeFilterValue>("all");
 
   return (
-    <div className="w-full px-2 py-4 sm:px-8 sm:py-8">
+    <div className="w-full px-1 py-4 sm:px-4 sm:py-8">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-black">캘린더</h1>
         <Button variant="primary" onClick={() => setCreating(true)}>

@@ -43,7 +43,7 @@ export function MonthGrid({ dates, today, tasks, anchorMonth, onDayClick, onTask
               key={date}
               onClick={() => onDayClick(date)}
               className={cn(
-                "min-h-[132px] cursor-pointer border-b border-r border-neutral-100 p-1 last:border-r-0",
+                "min-h-[132px] cursor-pointer border-b border-r border-neutral-100 px-0.5 py-1 last:border-r-0",
                 !inMonth && "bg-neutral-50/60"
               )}
             >
@@ -65,7 +65,7 @@ export function MonthGrid({ dates, today, tasks, anchorMonth, onDayClick, onTask
                       e.stopPropagation();
                       onOverflowClick(date);
                     }}
-                    className="px-1.5 text-left text-[10px] text-neutral-400 hover:text-black"
+                    className="px-0.5 text-left text-[10px] text-neutral-400 hover:text-black"
                   >
                     +{overflow}개
                   </button>

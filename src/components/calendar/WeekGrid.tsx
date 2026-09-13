@@ -42,10 +42,10 @@ export function WeekGrid({ dates, today, tasks, onDayClick, onTaskClick }: WeekG
                   <button
                     key={task.id}
                     onClick={() => onTaskClick(task)}
-                    className="mb-1 block w-full rounded-md border border-neutral-100 px-2 py-1.5 text-left hover:bg-neutral-50"
+                    className="mb-1 block w-full rounded-md border border-neutral-100 px-1 py-1.5 text-left hover:bg-neutral-50"
                   >
                     <p className="text-[10px] text-neutral-400">{formatTaskWhen(task)}</p>
-                    <p className="max-h-[2.6em] overflow-hidden break-words text-xs font-medium leading-tight text-black">{task.title}</p>
+                    <p className="max-h-[2.6em] overflow-hidden break-words text-[11px] font-medium leading-[1.3] text-black">{task.title}</p>
                     <StatusBadge status={task.status} className="mt-1" />
                   </button>
                 ))
