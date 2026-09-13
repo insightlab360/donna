@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { getTasksOnDate, isMultiDayTask, sortForPeriod } from "@/lib/tasks-logic";
 import { cn } from "@/lib/utils";
 import { CHIP_STYLE, TaskChip } from "./TaskChip";
+import { computeWeekSpans } from "./weekSpans";
 import type { Task } from "@/lib/types";
 
 const WEEKDAY_HEADERS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -19,46 +20,6 @@ interface MonthGridProps {
   onDayClick: (date: string) => void;
   onTaskClick: (task: Task) => void;
   onOverflowClick: (date: string) => void;
-}
-
-interface SpanBar {
-  task: Task;
-  startCol: number;
-  endCol: number;
-  lane: number;
-}
-
-/** Multi-day tasks overlapping this week, clipped to its 7 columns and stacked into non-overlapping lanes (earliest start first). */
-function computeWeekSpans(week: string[], tasks: Task[]): SpanBar[] {
-  const weekStart = week[0];
-  const weekEnd = week[6];
-
-  const overlapping = tasks
-    .filter(isMultiDayTask)
-    .map((task) => {
-      const s = task.start_date!;
-      const e = task.end_date!;
-      if (e < weekStart || s > weekEnd) return null;
-      const clippedStart = s < weekStart ? weekStart : s;
-      const clippedEnd = e > weekEnd ? weekEnd : e;
-      return { task, startCol: week.indexOf(clippedStart), endCol: week.indexOf(clippedEnd) };
-    })
-    .filter((v): v is { task: Task; startCol: number; endCol: number } => v !== null)
-    .sort((a, b) => a.startCol - b.startCol || a.task.title.localeCompare(b.task.title, "ko"));
-
-  const laneEnd: number[] = [];
-  const bars: SpanBar[] = [];
-  for (const item of overlapping) {
-    let lane = laneEnd.findIndex((endCol) => endCol < item.startCol);
-    if (lane === -1) {
-      lane = laneEnd.length;
-      laneEnd.push(item.endCol);
-    } else {
-      laneEnd[lane] = item.endCol;
-    }
-    bars.push({ ...item, lane });
-  }
-  return bars;
 }
 
 export function MonthGrid({ dates, today, tasks, anchorMonth, onDayClick, onTaskClick, onOverflowClick }: MonthGridProps) {
@@ -145,7 +106,9 @@ export function MonthGrid({ dates, today, tasks, anchorMonth, onDayClick, onTask
                 }}
                 title={bar.task.title}
               >
+                {bar.continuesBefore && "◂ "}
                 {bar.task.title}
+                {bar.continuesAfter && " ▸"}
               </button>
             ))}
           </div>

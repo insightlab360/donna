@@ -3,12 +3,13 @@
 import { cn } from "@/lib/utils";
 import type { Task, TaskStatus } from "@/lib/types";
 
+/** Status shown by shade alone (no border style, strikethrough, or weight change) — white through gray as work progresses. */
 export const CHIP_STYLE: Record<TaskStatus, string> = {
-  예정: "border border-neutral-300 bg-white text-neutral-700",
-  진행중: "bg-black text-white font-medium",
-  완료: "bg-neutral-100 text-neutral-400 line-through",
-  보류: "border border-dashed border-neutral-400 bg-white text-neutral-600",
-  드랍: "bg-neutral-50 text-neutral-300",
+  예정: "border border-neutral-200 bg-white text-neutral-700",
+  진행중: "border border-neutral-100 bg-neutral-100 text-neutral-700",
+  완료: "border border-neutral-300 bg-neutral-300 text-neutral-700",
+  보류: "border border-neutral-200 bg-neutral-200 text-neutral-600",
+  드랍: "border border-neutral-50 bg-neutral-50 text-neutral-300",
 };
 
 export function TaskChip({ task, onClick }: { task: Task; onClick: () => void }) {
