@@ -29,11 +29,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
         <p className="text-2xl font-semibold tracking-tight text-black">My Assistant Donna</p>
         <p className="mt-1 text-sm text-neutral-500">나의 비서 도나</p>
-        <p className="mt-6 text-sm text-neutral-600">
-          개인 일정, 회사 업무, 프로젝트를
-          <br />
-          한곳에서 관리하세요.
-        </p>
+        <p className="mt-6 text-sm text-neutral-600">My Assistant Donna와 함께 개인/업무 일정을 관리해보세요</p>
 
         <button
           onClick={handleGoogleLogin}

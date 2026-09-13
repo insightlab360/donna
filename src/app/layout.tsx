@@ -16,6 +16,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Without this, iOS/Android keep the layout viewport at its pre-keyboard size when
+  // the on-screen keyboard opens, so fixed-position drawers/dialogs (inset-y-0, 100dvh)
+  // get partially covered and their content can't scroll into view above the keyboard.
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

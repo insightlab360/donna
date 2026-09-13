@@ -92,14 +92,17 @@ export function AdminsManager({ currentUserId }: { currentUserId: string }) {
         ) : (
           <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
             {admins.map((a) => (
-              <div key={a.id} className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 last:border-b-0">
-                <div>
-                  <p className="text-sm font-medium text-black">{a.name ?? a.email}</p>
-                  <p className="text-xs text-neutral-500">
+              <div
+                key={a.id}
+                className="flex flex-col gap-2 border-b border-neutral-100 px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-black">{a.name ?? a.email}</p>
+                  <p className="truncate text-xs text-neutral-500">
                     {a.email} · {a.role}
                   </p>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex flex-wrap gap-1.5">
                   {a.role === "admin" && (
                     <Button size="sm" variant="secondary" disabled={busyId === a.id} onClick={() => changeRole(a.id, "super_admin")}>
                       super_admin으로
@@ -132,12 +135,12 @@ export function AdminsManager({ currentUserId }: { currentUserId: string }) {
         {searchResults.length > 0 && (
           <div className="mt-2 overflow-hidden rounded-lg border border-neutral-200 bg-white">
             {searchResults.map((p) => (
-              <div key={p.id} className="flex items-center justify-between border-b border-neutral-100 px-4 py-2.5 last:border-b-0">
-                <div>
-                  <p className="text-sm text-black">{p.name ?? p.email}</p>
-                  <p className="text-xs text-neutral-500">{p.email}</p>
+              <div key={p.id} className="flex items-center justify-between gap-2 border-b border-neutral-100 px-4 py-2.5 last:border-b-0">
+                <div className="min-w-0">
+                  <p className="truncate text-sm text-black">{p.name ?? p.email}</p>
+                  <p className="truncate text-xs text-neutral-500">{p.email}</p>
                 </div>
-                <Button size="sm" variant="primary" disabled={busyId === p.id} onClick={() => changeRole(p.id, "admin")}>
+                <Button size="sm" variant="primary" className="shrink-0" disabled={busyId === p.id} onClick={() => changeRole(p.id, "admin")}>
                   admin으로 추가
                 </Button>
               </div>

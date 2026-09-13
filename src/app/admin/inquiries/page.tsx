@@ -112,17 +112,17 @@ export default function AdminInquiriesPage() {
                 <div
                   key={i.id}
                   onClick={() => setSelectedId(i.id)}
-                  className="flex w-full cursor-pointer items-center justify-between gap-3 border-b border-neutral-100 px-4 py-3 text-left last:border-b-0 hover:bg-neutral-50"
+                  className="flex w-full cursor-pointer flex-col gap-2 border-b border-neutral-100 px-4 py-3 text-left last:border-b-0 hover:bg-neutral-50 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                 >
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-xs text-neutral-500">
-                      <span>{p?.name ?? "-"}</span>
-                      <span>{p?.email ?? "-"}</span>
-                      <span className="rounded border border-neutral-300 px-1.5 py-0.5">{i.category}</span>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-500">
+                      <span className="max-w-[45%] truncate">{p?.name ?? "-"}</span>
+                      <span className="max-w-[55%] truncate">{p?.email ?? "-"}</span>
+                      <span className="shrink-0 rounded border border-neutral-300 px-1.5 py-0.5">{i.category}</span>
                     </div>
                     <p className="mt-0.5 truncate text-sm font-medium text-black">{i.subject}</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2 text-right text-xs text-neutral-400">
+                  <div className="flex shrink-0 items-center justify-between gap-2 text-xs text-neutral-400 sm:justify-end sm:text-right">
                     <p>{new Date(i.created_at).toLocaleDateString("ko-KR")}</p>
                     <select
                       value={i.status}

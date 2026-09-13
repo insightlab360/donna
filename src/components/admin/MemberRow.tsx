@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { formatMonthDayKR } from "@/lib/date";
 import { formatKRW } from "@/lib/membership/config";
 import { paymentStatusLabel, roleLabel, statusLabel, usageTypeLabel } from "@/lib/membership/labels";
 import { effectiveStatus, remainingLabel } from "@/lib/membership/period";
+import { useMemberActions } from "@/lib/useMemberActions";
 import type { PaymentRecord, Profile } from "@/lib/types";
 
 interface MemberRowProps {
@@ -19,22 +19,8 @@ const inlineFieldClass =
   "rounded border border-transparent px-1 py-0.5 text-xs outline-none hover:border-neutral-300 focus:border-black disabled:opacity-40";
 
 export function MemberRow({ profile, latestPayment, memo1, onOpenDetail, onChanged }: MemberRowProps) {
-  const [busy, setBusy] = useState(false);
+  const { busy, post } = useMemberActions(onChanged);
   const status = effectiveStatus(profile);
-
-  async function post(path: string, body?: unknown) {
-    setBusy(true);
-    try {
-      const res = await fetch(path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body ?? {}),
-      });
-      if (res.ok) onChanged();
-    } finally {
-      setBusy(false);
-    }
-  }
 
   function handleMemo1Blur(e: React.FocusEvent<HTMLInputElement>) {
     const value = e.target.value.trim().slice(0, 5);

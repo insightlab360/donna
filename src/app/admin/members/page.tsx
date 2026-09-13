@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MEMBER_FILTERS, matchesFilter, type MemberFilter } from "@/lib/membership/labels";
+import { MemberCard } from "@/components/admin/MemberCard";
 import { MemberDetailDrawer } from "@/components/admin/MemberDetailDrawer";
 import { MemberRow } from "@/components/admin/MemberRow";
 import { Pagination } from "@/components/admin/Pagination";
@@ -104,26 +105,53 @@ export default function AdminMembersPage() {
       {loading ? (
         <p className="py-16 text-center text-sm text-neutral-400">불러오는 중...</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
-          <table className="w-full min-w-[1080px] text-left text-sm">
-            <thead className="border-b border-neutral-200 bg-neutral-50 text-xs text-neutral-500">
-              <tr>
-                <th className="px-3 py-2 font-medium">이름</th>
-                <th className="px-3 py-2 font-medium">Gmail</th>
-                <th className="px-3 py-2 font-medium">회원종류</th>
-                <th className="px-3 py-2 font-medium">상태</th>
-                <th className="px-3 py-2 font-medium">이용유형</th>
-                <th className="px-3 py-2 font-medium">시작일</th>
-                <th className="px-3 py-2 font-medium">종료일</th>
-                <th className="px-3 py-2 font-medium">남은기간</th>
-                <th className="px-3 py-2 font-medium">결제상태</th>
-                <th className="px-3 py-2 font-medium">최근결제금액</th>
-                <th className="px-3 py-2 font-medium">메모1</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paged.map((p) => (
-                <MemberRow
+        <div className="rounded-lg border border-neutral-200 bg-white">
+          {/* Desktop: full table. A 1080px-wide table can't reflow to a phone screen, so mobile gets a stacked card layout instead. */}
+          <div className="hidden overflow-x-auto sm:block">
+            <table className="w-full min-w-[1080px] text-left text-sm">
+              <thead className="border-b border-neutral-200 bg-neutral-50 text-xs text-neutral-500">
+                <tr>
+                  <th className="px-3 py-2 font-medium">이름</th>
+                  <th className="px-3 py-2 font-medium">Gmail</th>
+                  <th className="px-3 py-2 font-medium">회원종류</th>
+                  <th className="px-3 py-2 font-medium">상태</th>
+                  <th className="px-3 py-2 font-medium">이용유형</th>
+                  <th className="px-3 py-2 font-medium">시작일</th>
+                  <th className="px-3 py-2 font-medium">종료일</th>
+                  <th className="px-3 py-2 font-medium">남은기간</th>
+                  <th className="px-3 py-2 font-medium">결제상태</th>
+                  <th className="px-3 py-2 font-medium">최근결제금액</th>
+                  <th className="px-3 py-2 font-medium">메모1</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paged.map((p) => (
+                  <MemberRow
+                    key={p.id}
+                    profile={p}
+                    latestPayment={latestPaymentByUser.get(p.id)}
+                    memo1={memo1ByUser.get(p.id) ?? ""}
+                    onOpenDetail={() => setSelectedId(p.id)}
+                    onChanged={load}
+                  />
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={11} className="px-3 py-10 text-center text-sm text-neutral-400">
+                      조건에 맞는 회원이 없습니다.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="sm:hidden">
+            {filtered.length === 0 ? (
+              <p className="px-3 py-10 text-center text-sm text-neutral-400">조건에 맞는 회원이 없습니다.</p>
+            ) : (
+              paged.map((p) => (
+                <MemberCard
                   key={p.id}
                   profile={p}
                   latestPayment={latestPaymentByUser.get(p.id)}
@@ -131,16 +159,10 @@ export default function AdminMembersPage() {
                   onOpenDetail={() => setSelectedId(p.id)}
                   onChanged={load}
                 />
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={11} className="px-3 py-10 text-center text-sm text-neutral-400">
-                    조건에 맞는 회원이 없습니다.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              ))
+            )}
+          </div>
+
           <Pagination page={page} pageCount={pageCount} totalCount={totalCount} pageSize={PAGE_SIZE} onPageChange={setPage} />
         </div>
       )}
