@@ -1,4 +1,4 @@
-import { compareDateStr, formatShortDateRange, formatTimeOrNone, isDateInRange, todayKST } from "./date";
+import { compareDateStr, formatShortDate, formatShortDateRange, formatTimeOrNone, isDateInRange, todayKST } from "./date";
 import type { Project, ProjectStats, Task, WorkType } from "./types";
 
 /** "프로젝트: 이름" — used anywhere a project's name is shown so it can't be mistaken for a Task title. */
@@ -13,6 +13,22 @@ export function formatTaskWhen(task: Task): string {
     return formatShortDateRange(task.start_date!, task.end_date ?? task.start_date!);
   }
   return formatTimeOrNone(task.start_time);
+}
+
+/**
+ * Task 요약카드(TaskRow, Task 목록)용 — 날짜는 항상 보여주고, 시간은 지정된 경우에만
+ * 붙인다("시간 미지정" 같은 자리표시자는 노출하지 않음).
+ */
+export function formatTaskCardWhen(task: Task): string {
+  if (task.date_mode === "none") return "기한 미정";
+  if (task.date_mode === "date_range" || task.date_mode === "datetime_range") {
+    return formatShortDateRange(task.start_date!, task.end_date ?? task.start_date!);
+  }
+  const datePart = formatShortDate(task.start_date!);
+  if (!task.start_time) return datePart;
+  const start = task.start_time.slice(0, 5);
+  const end = task.end_time ? task.end_time.slice(0, 5) : null;
+  return end ? `${datePart} ${start}-${end}` : `${datePart} ${start}`;
 }
 
 export function computeDueDate(task: {

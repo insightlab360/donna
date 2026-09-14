@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useData } from "@/lib/data-context";
+import { useWorkTypeFilter } from "@/lib/work-type-filter-context";
 import {
   addDaysStr,
   endOfMonthStr,
@@ -11,10 +12,11 @@ import {
   startOfWeekMon,
   todayKST,
 } from "@/lib/date";
-import { formatTaskWhen, isDueInRange, projectDisplayName, sortForPeriod } from "@/lib/tasks-logic";
+import { formatTaskCardWhen, isDueInRange, projectDisplayName, sortForPeriod } from "@/lib/tasks-logic";
+import { STATUS_CHIP_STYLE } from "@/lib/status-style";
 import { WorkTypeBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { WorkTypeFilterBar, matchesWorkTypeFilter, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
+import { WorkTypeFilterBar, matchesWorkTypeFilter } from "@/components/ui/WorkTypeFilterBar";
 import { TaskFormDrawer } from "./TaskFormDrawer";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -63,7 +65,7 @@ export function PeriodQuery() {
   const [customEnd, setCustomEnd] = useState(today);
   const [year, setYear] = useState(() => Number(today.slice(0, 4)));
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [workTypeFilter, setWorkTypeFilter] = useState<WorkTypeFilterValue>("all");
+  const { workTypeFilter, setWorkTypeFilter } = useWorkTypeFilter();
 
   const [rangeStart, rangeEnd] = preset === "custom" ? [customStart, customEnd] : rangeForPreset(preset, today, year);
 
@@ -140,7 +142,7 @@ export function PeriodQuery() {
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-xs text-neutral-500">
-                    <span className="font-medium text-neutral-700">{formatTaskWhen(task)}</span>
+                    <span className="font-medium text-neutral-700">{formatTaskCardWhen(task)}</span>
                     <WorkTypeBadge workType={task.work_type} />
                     {project && <span className="truncate">{projectDisplayName(project.name)}</span>}
                   </div>
@@ -157,7 +159,7 @@ export function PeriodQuery() {
                   <select
                     value={task.status}
                     onChange={(e) => updateTask(task.id, { status: e.target.value as TaskStatus })}
-                    className="rounded-full border border-neutral-300 bg-white px-2 py-1 text-[11px] font-medium text-neutral-700 outline-none focus:border-black"
+                    className={`rounded-full px-2 py-1 text-[11px] font-medium outline-none focus:border-black ${STATUS_CHIP_STYLE[task.status]}`}
                   >
                     {TASK_STATUSES.map((s) => (
                       <option key={s} value={s}>

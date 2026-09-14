@@ -1,8 +1,10 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
-import { formatTaskWhen, isDueToday, projectDisplayName } from "@/lib/tasks-logic";
+import { formatTaskCardWhen, isDueToday, projectDisplayName } from "@/lib/tasks-logic";
 import { todayKST } from "@/lib/date";
+import { STATUS_CHIP_STYLE } from "@/lib/status-style";
+import { cn } from "@/lib/utils";
 import { StatusBadge, WorkTypeBadge } from "@/components/ui/Badge";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/types";
 
@@ -28,7 +30,7 @@ export function TaskRow({ task, onClick, quickStatus, showDueBadge }: TaskRowPro
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-xs text-neutral-500">
-          <span className="font-medium text-neutral-700">{formatTaskWhen(task)}</span>
+          <span className="font-medium text-neutral-700">{formatTaskCardWhen(task)}</span>
           {showDueBadge && dueToday && (
             <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-medium text-white">오늘 마감</span>
           )}
@@ -46,7 +48,7 @@ export function TaskRow({ task, onClick, quickStatus, showDueBadge }: TaskRowPro
           <select
             value={task.status}
             onChange={(e) => updateTask(task.id, { status: e.target.value as TaskStatus })}
-            className="rounded-full border border-neutral-300 bg-white px-2 py-1 text-[11px] font-medium text-neutral-700 outline-none focus:border-black"
+            className={cn("rounded-full px-2 py-1 text-[11px] font-medium outline-none focus:border-black", STATUS_CHIP_STYLE[task.status])}
           >
             {TASK_STATUSES.map((s) => (
               <option key={s} value={s}>

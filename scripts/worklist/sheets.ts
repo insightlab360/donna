@@ -137,4 +137,15 @@ export class MaintenanceSheet {
       data: { values: [[result, note]] },
     });
   }
+
+  /** Appends a new row after the last one with data, for items requested outside the sheet itself. */
+  async appendRow(date: string, item: string, target: string): Promise<void> {
+    const range = encodeURIComponent(this.rangeFor(COLUMN_RANGE));
+    const url = `${SHEETS_API}/${this.config.spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+    await this.auth.request({
+      url,
+      method: "POST",
+      data: { values: [[date, item, target, "", ""]] },
+    });
+  }
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useData } from "@/lib/data-context";
+import { useWorkTypeFilter } from "@/lib/work-type-filter-context";
 import { useTodayPopup } from "@/components/today/TodayPopupProvider";
 import { endOfWeekSun, startOfWeekMon, todayKST, addDaysStr } from "@/lib/date";
 import {
@@ -20,13 +21,13 @@ import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { UndeterminedSection } from "@/components/tasks/UndeterminedSection";
 import { Button } from "@/components/ui/Button";
-import { WorkTypeFilterBar, matchesWorkTypeFilter, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
+import { WorkTypeFilterBar, matchesWorkTypeFilter } from "@/components/ui/WorkTypeFilterBar";
 
 export default function DashboardPage() {
   const { tasks: allTasks, projects: allProjects, loading } = useData();
   const { openPopup } = useTodayPopup();
   const [creating, setCreating] = useState(false);
-  const [workTypeFilter, setWorkTypeFilter] = useState<WorkTypeFilterValue>("all");
+  const { workTypeFilter, setWorkTypeFilter } = useWorkTypeFilter();
 
   const today = todayKST();
 

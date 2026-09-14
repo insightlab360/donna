@@ -13,13 +13,14 @@ interface ProjectFormProps {
 }
 
 export function ProjectForm({ project, onDone }: ProjectFormProps) {
-  const { createProject, updateProject, deleteProject } = useData();
+  const { createProject, updateProject, deleteProject, addProjectNote } = useData();
 
   const [name, setName] = useState(project?.name ?? "");
   const [workType, setWorkType] = useState<WorkType>(project?.work_type ?? "회사");
   const [startDate, setStartDate] = useState(project?.start_date ?? "");
   const [endDate, setEndDate] = useState(project?.end_date ?? "");
   const [status, setStatus] = useState<ProjectStatus>(project?.status ?? "예정");
+  const [memo, setMemo] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -52,7 +53,10 @@ export function ProjectForm({ project, onDone }: ProjectFormProps) {
       if (project) {
         await updateProject(project.id, result.data);
       } else {
-        await createProject(result.data);
+        const created = await createProject(result.data);
+        if (memo.trim()) {
+          await addProjectNote(created.id, memo.trim());
+        }
       }
       onDone();
     } catch (err) {
@@ -131,7 +135,20 @@ export function ProjectForm({ project, onDone }: ProjectFormProps) {
         </select>
       </label>
 
-      {project && <NotesSection kind="project" recordId={project.id} />}
+      {project ? (
+        <NotesSection kind="project" recordId={project.id} />
+      ) : (
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-neutral-600">메모 (선택)</span>
+          <textarea
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            rows={2}
+            placeholder="진행 상황이나 특이사항을 기록하세요"
+            className="w-full resize-none rounded-md border border-neutral-300 px-2.5 py-1.5 text-sm outline-none focus:border-black"
+          />
+        </label>
+      )}
 
       {formError && <p className="text-sm text-red-600">{formError}</p>}
 

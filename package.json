@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "worklist:list": "tsx --env-file=.env.local scripts/worklist/list.ts",
-    "worklist:mark": "tsx --env-file=.env.local scripts/worklist/mark.ts"
+    "worklist:mark": "tsx --env-file=.env.local scripts/worklist/mark.ts",
+    "worklist:add": "tsx --env-file=.env.local scripts/worklist/add.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

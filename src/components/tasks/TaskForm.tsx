@@ -17,7 +17,7 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFormProps) {
-  const { projects, createTask, updateTask, deleteTask, createProject } = useData();
+  const { projects, createTask, updateTask, deleteTask, createProject, addTaskNote } = useData();
 
   const [workType, setWorkType] = useState<WorkType>(task?.work_type ?? "회사");
   const [title, setTitle] = useState(task?.title ?? "");
@@ -36,6 +36,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
   const [endDate, setEndDate] = useState(task?.end_date ?? "");
   const [endTime, setEndTime] = useState(task?.end_time?.slice(0, 5) ?? "");
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? "예정");
+  const [memo, setMemo] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
   const isUndetermined = dateKind === "none";
   const needsStartTime = hasTime && !isUndetermined;
   const needsEndDate = isPeriod;
-  const needsEndTime = isPeriod && hasTime;
+  const needsEndTime = hasTime && !isUndetermined;
   const dateMode = isUndetermined
     ? ("none" as const)
     : isPeriod
@@ -92,7 +93,10 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
       if (task) {
         await updateTask(task.id, result.data);
       } else {
-        await createTask(result.data);
+        const created = await createTask(result.data);
+        if (memo.trim()) {
+          await addTaskNote(created.id, memo.trim());
+        }
       }
       onDone();
     } catch (err) {
@@ -329,7 +333,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
               )}
               {needsEndTime && (
                 <div>
-                  <span className="mb-1 block text-[11px] text-neutral-500">종료 시간</span>
+                  <span className="mb-1 block text-[11px] text-neutral-500">{isPeriod ? "종료 시간" : "완료 시간 (선택)"}</span>
                   <input
                     type="time"
                     value={endTime}
@@ -358,7 +362,19 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
         </select>
       </Field>
 
-      {task && <NotesSection kind="task" recordId={task.id} />}
+      {task ? (
+        <NotesSection kind="task" recordId={task.id} />
+      ) : (
+        <Field label="메모 (선택)">
+          <textarea
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            rows={2}
+            placeholder="진행 상황이나 특이사항을 기록하세요"
+            className="w-full resize-none rounded-md border border-neutral-300 px-2.5 py-1.5 text-sm outline-none focus:border-black"
+          />
+        </Field>
+      )}
 
       {formError && <p className="text-sm text-red-600">{formError}</p>}
 

@@ -5,11 +5,12 @@ import { CalendarView } from "@/components/calendar/CalendarView";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { UndeterminedSection } from "@/components/tasks/UndeterminedSection";
 import { Button } from "@/components/ui/Button";
-import { WorkTypeFilterBar, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
+import { WorkTypeFilterBar } from "@/components/ui/WorkTypeFilterBar";
+import { useWorkTypeFilter } from "@/lib/work-type-filter-context";
 
 export default function CalendarPage() {
   const [creating, setCreating] = useState(false);
-  const [workTypeFilter, setWorkTypeFilter] = useState<WorkTypeFilterValue>("all");
+  const { workTypeFilter, setWorkTypeFilter } = useWorkTypeFilter();
 
   return (
     <div className="w-full px-1 py-4 sm:px-4 sm:py-8">
