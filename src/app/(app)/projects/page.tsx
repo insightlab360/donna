@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useData } from "@/lib/data-context";
+import { useWorkTypeFilter } from "@/lib/work-type-filter-context";
 import { todayKST } from "@/lib/date";
 import { computeProjectStats, projectDisplayName, sortForPopup, sortProjectsForDisplay } from "@/lib/tasks-logic";
 import { STATUS_CHIP_STYLE } from "@/lib/status-style";
@@ -11,6 +12,7 @@ import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { TaskRow } from "@/components/tasks/TaskRow";
 import { Button } from "@/components/ui/Button";
 import { WorkTypeBadge } from "@/components/ui/Badge";
+import { WorkTypeFilterBar, matchesWorkTypeFilter } from "@/components/ui/WorkTypeFilterBar";
 import { PROJECT_STATUSES, type Project, type ProjectStatus, type Task } from "@/lib/types";
 
 function projectYear(project: Project): string {
@@ -24,9 +26,12 @@ export default function ProjectsPage() {
   const [addingTaskFor, setAddingTaskFor] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [year, setYear] = useState<number | "all">(() => Number(todayKST().slice(0, 4)));
+  const { workTypeFilter, setWorkTypeFilter } = useWorkTypeFilter();
 
   const items = useMemo(() => {
-    const yearProjects = projects.filter((project) => year === "all" || projectYear(project) === String(year));
+    const yearProjects = projects.filter(
+      (project) => (year === "all" || projectYear(project) === String(year)) && matchesWorkTypeFilter(project.work_type, workTypeFilter)
+    );
     return sortProjectsForDisplay(yearProjects).map((project) => {
       const latestNote = projectNotes
         .filter((n) => n.project_id === project.id)
@@ -38,7 +43,7 @@ export default function ProjectsPage() {
         latestNote,
       };
     });
-  }, [projects, tasks, projectNotes, year]);
+  }, [projects, tasks, projectNotes, year, workTypeFilter]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
@@ -69,6 +74,10 @@ export default function ProjectsPage() {
         <Button size="sm" variant={year === "all" ? "primary" : "ghost"} onClick={() => setYear("all")}>
           전체보기
         </Button>
+      </div>
+
+      <div className="mb-6">
+        <WorkTypeFilterBar value={workTypeFilter} onChange={setWorkTypeFilter} />
       </div>
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
