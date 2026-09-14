@@ -1,0 +1,64 @@
+name: Nightly maintenance
+
+# 매일 19:00 Asia/Seoul(KST) 실행. KST는 서머타임이 없어 UTC 변환이 항상 고정이다: 19:00 - 9h = 10:00 UTC.
+# 실행 시각을 바꾸려면 이 cron 표현식 한 줄만 수정하면 된다 (README "13. 야간 자동 유지보수" 참고).
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true면 실제 커밋/시트 기록 없이 대상 행만 로그로 출력"
+        type: boolean
+        default: false
+      max_rows:
+        description: "이번 실행에서 처리할 최대 행 수"
+        type: string
+        default: "5"
+
+# 스케줄과 수동 실행이 겹쳐도 동시에 두 개가 돌지 않도록 직렬화한다 (Sheet 행 중복 처리 방지의 1차 방어선).
+concurrency:
+  group: nightly-maintenance
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Run nightly maintenance
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SHEET_NAME: ${{ secrets.GOOGLE_SHEET_NAME }}
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MAINTENANCE_MAX_ROWS: ${{ inputs.max_rows || '5' }}
+          # npm run build 에 필요한 앱 환경변수 (기존 Vercel 배포와 동일한 값 재사용)
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          SUPPORT_EMAIL_FROM: ${{ secrets.SUPPORT_EMAIL_FROM }}
+          ADMIN_NOTIFICATION_EMAIL: ${{ secrets.ADMIN_NOTIFICATION_EMAIL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm run maintenance -- --dry-run
+          else
+            npm run maintenance
+          fi
