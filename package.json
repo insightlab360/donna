@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "maintenance": "tsx scripts/maintenance/run.ts"
+    "worklist:list": "tsx --env-file=.env.local scripts/worklist/list.ts",
+    "worklist:mark": "tsx --env-file=.env.local scripts/worklist/mark.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -31,7 +32,6 @@
     "zod": "^4.6.2"
   },
   "devDependencies": {
-    "@anthropic-ai/claude-code": "^2.0.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

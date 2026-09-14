@@ -41,5 +41,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# maintenance automation runtime output (never commit)
-/.maintenance/
+# Google 서비스 계정 키 파일 (절대 커밋 금지)
+/secrets/
