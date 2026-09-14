@@ -5,19 +5,20 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useData } from "@/lib/data-context";
 import { todayKST } from "@/lib/date";
 import { computeProjectStats, projectDisplayName, sortForPopup, sortProjectsForDisplay } from "@/lib/tasks-logic";
+import { STATUS_CHIP_STYLE } from "@/lib/status-style";
 import { ProjectFormDrawer } from "@/components/projects/ProjectFormDrawer";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { TaskRow } from "@/components/tasks/TaskRow";
 import { Button } from "@/components/ui/Button";
 import { WorkTypeBadge } from "@/components/ui/Badge";
-import type { Project, Task } from "@/lib/types";
+import { PROJECT_STATUSES, type Project, type ProjectStatus, type Task } from "@/lib/types";
 
 function projectYear(project: Project): string {
   return (project.start_date ?? project.created_at).slice(0, 4);
 }
 
 export default function ProjectsPage() {
-  const { projects, tasks, projectNotes, loading, error } = useData();
+  const { projects, tasks, projectNotes, loading, error, updateProject } = useData();
   const [creating, setCreating] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [addingTaskFor, setAddingTaskFor] = useState<string | null>(null);
@@ -90,7 +91,18 @@ export default function ProjectsPage() {
                     <h2 className="truncate text-sm font-semibold text-black">{projectDisplayName(project.name)}</h2>
                     <span className="shrink-0 text-xs font-semibold text-black">{stats.progress}%</span>
                     <WorkTypeBadge workType={project.work_type} />
-                    <span className="shrink-0 text-xs text-neutral-400">{project.status}</span>
+                    <select
+                      value={project.status}
+                      onChange={(e) => updateProject(project.id, { status: e.target.value as ProjectStatus })}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium outline-none focus:border-black ${STATUS_CHIP_STYLE[project.status]}`}
+                    >
+                      {PROJECT_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   {latestNote && <p className="mt-1 truncate text-xs italic text-neutral-400">메모: {latestNote.content}</p>}
                 </div>
