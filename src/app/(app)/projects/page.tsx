@@ -5,8 +5,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useData } from "@/lib/data-context";
 import { useWorkTypeFilter } from "@/lib/work-type-filter-context";
 import { todayKST } from "@/lib/date";
-import { computeProjectStats, projectDisplayName, sortForPopup, sortProjectsForDisplay } from "@/lib/tasks-logic";
-import { STATUS_CHIP_STYLE } from "@/lib/status-style";
+import {
+  computeProjectStats,
+  projectDisplayName,
+  projectMatchesYearQuarter,
+  sortForPopup,
+  sortProjectsForDisplay,
+  taskMatchesYearQuarter,
+} from "@/lib/tasks-logic";
+import { PRIORITY_TEXT_CLASS, STATUS_CHIP_STYLE } from "@/lib/status-style";
 import { ProjectFormDrawer } from "@/components/projects/ProjectFormDrawer";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { TaskRow } from "@/components/tasks/TaskRow";
@@ -15,9 +22,7 @@ import { WorkTypeBadge } from "@/components/ui/Badge";
 import { WorkTypeFilterBar, matchesWorkTypeFilter } from "@/components/ui/WorkTypeFilterBar";
 import { PROJECT_STATUSES, type Project, type ProjectStatus, type Task } from "@/lib/types";
 
-function projectYear(project: Project): string {
-  return (project.start_date ?? project.created_at).slice(0, 4);
-}
+const QUARTERS = [1, 2, 3, 4] as const;
 
 export default function ProjectsPage() {
   const { projects, tasks, projectNotes, loading, error, updateProject } = useData();
@@ -26,24 +31,30 @@ export default function ProjectsPage() {
   const [addingTaskFor, setAddingTaskFor] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [year, setYear] = useState<number | "all">(() => Number(todayKST().slice(0, 4)));
+  const [quarter, setQuarter] = useState<number | "all">("all");
   const { workTypeFilter, setWorkTypeFilter } = useWorkTypeFilter();
 
   const items = useMemo(() => {
-    const yearProjects = projects.filter(
-      (project) => (year === "all" || projectYear(project) === String(year)) && matchesWorkTypeFilter(project.work_type, workTypeFilter)
-    );
-    return sortProjectsForDisplay(yearProjects).map((project) => {
-      const latestNote = projectNotes
-        .filter((n) => n.project_id === project.id)
-        .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-      return {
-        project,
-        stats: computeProjectStats(project, tasks),
-        projectTasks: sortForPopup(tasks.filter((t) => t.project_id === project.id)),
-        latestNote,
-      };
-    });
-  }, [projects, tasks, projectNotes, year, workTypeFilter]);
+    const workTypeProjects = projects.filter((project) => matchesWorkTypeFilter(project.work_type, workTypeFilter));
+    return sortProjectsForDisplay(workTypeProjects)
+      .map((project) => {
+        const allProjectTasks = sortForPopup(tasks.filter((t) => t.project_id === project.id));
+        const matchesPeriod = year === "all" || projectMatchesYearQuarter(project, allProjectTasks, year, quarter);
+        const projectTasks =
+          year !== "all" && quarter !== "all" ? allProjectTasks.filter((t) => taskMatchesYearQuarter(t, year, quarter)) : allProjectTasks;
+        const latestNote = projectNotes
+          .filter((n) => n.project_id === project.id)
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+        return {
+          project,
+          matchesPeriod,
+          stats: computeProjectStats(project, tasks),
+          projectTasks,
+          latestNote,
+        };
+      })
+      .filter((item) => item.matchesPeriod);
+  }, [projects, tasks, projectNotes, year, quarter, workTypeFilter]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
@@ -71,10 +82,30 @@ export default function ProjectsPage() {
         <Button size="sm" variant="secondary" onClick={() => setYear(Number(todayKST().slice(0, 4)))}>
           올해
         </Button>
-        <Button size="sm" variant={year === "all" ? "primary" : "ghost"} onClick={() => setYear("all")}>
+        <Button
+          size="sm"
+          variant={year === "all" ? "primary" : "ghost"}
+          onClick={() => {
+            setYear("all");
+            setQuarter("all");
+          }}
+        >
           전체보기
         </Button>
       </div>
+
+      {year !== "all" && (
+        <div className="mb-6 flex flex-wrap items-center gap-1.5">
+          <Button size="sm" variant={quarter === "all" ? "primary" : "ghost"} onClick={() => setQuarter("all")}>
+            전체 분기
+          </Button>
+          {QUARTERS.map((q) => (
+            <Button key={q} size="sm" variant={quarter === q ? "primary" : "ghost"} onClick={() => setQuarter(q)}>
+              {q}분기
+            </Button>
+          ))}
+        </div>
+      )}
 
       <div className="mb-6">
         <WorkTypeFilterBar value={workTypeFilter} onChange={setWorkTypeFilter} />
@@ -87,7 +118,11 @@ export default function ProjectsPage() {
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-neutral-300 py-16 text-center">
           <p className="text-sm text-neutral-400">
-            {year === "all" ? "등록된 프로젝트가 없습니다." : `${year}년에 등록된 프로젝트가 없습니다.`}
+            {year === "all"
+              ? "등록된 프로젝트가 없습니다."
+              : quarter === "all"
+                ? `${year}년에 등록된 프로젝트가 없습니다.`
+                : `${year}년 ${quarter}분기에 해당하는 프로젝트가 없습니다.`}
           </p>
         </div>
       ) : (
@@ -97,7 +132,9 @@ export default function ProjectsPage() {
               <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h2 className="truncate text-sm font-semibold text-black">{projectDisplayName(project.name)}</h2>
+                    <h2 className={`truncate text-sm font-semibold text-black ${project.priority ? PRIORITY_TEXT_CLASS : ""}`}>
+                      {projectDisplayName(project.name)}
+                    </h2>
                     <span className="shrink-0 text-xs font-semibold text-black">{stats.progress}%</span>
                     <WorkTypeBadge workType={project.work_type} />
                     <select

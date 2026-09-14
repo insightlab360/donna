@@ -28,7 +28,8 @@ interface DataContextValue {
   fetchTasksInRange: (start: string, end: string) => Promise<Task[]>;
 }
 
-const TASK_COLUMNS = "id,user_id,work_type,title,project_id,date_mode,start_date,start_time,end_date,end_time,due_date,status,created_at,updated_at";
+const TASK_COLUMNS =
+  "id,user_id,work_type,title,project_id,date_mode,start_date,start_time,end_date,end_time,due_date,status,priority,created_at,updated_at";
 
 const DataContext = createContext<DataContextValue | null>(null);
 
@@ -45,7 +46,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     const [tasksRes, projectsRes, taskNotesRes, projectNotesRes] = await Promise.all([
       supabase.from("tasks").select(TASK_COLUMNS).order("due_date", { ascending: true }),
-      supabase.from("projects").select("id,user_id,name,work_type,start_date,end_date,status,created_at,updated_at").order("created_at", { ascending: false }),
+      supabase
+        .from("projects")
+        .select("id,user_id,name,work_type,start_date,end_date,status,priority,created_at,updated_at")
+        .order("created_at", { ascending: false }),
       supabase.from("task_notes").select("*").order("created_at", { ascending: false }),
       supabase.from("project_notes").select("*").order("created_at", { ascending: false }),
     ]);

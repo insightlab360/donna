@@ -7,6 +7,7 @@ import { TASK_STATUSES, WORK_TYPES, type Task, type TaskStatus, type WorkType } 
 import { taskFormSchema } from "@/lib/validation";
 import { sortProjectsForDisplay } from "@/lib/tasks-logic";
 import { Button } from "@/components/ui/Button";
+import { Toggle } from "@/components/ui/Toggle";
 import { NotesSection } from "@/components/notes/NotesSection";
 
 interface TaskFormProps {
@@ -36,6 +37,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
   const [endDate, setEndDate] = useState(task?.end_date ?? "");
   const [endTime, setEndTime] = useState(task?.end_time?.slice(0, 5) ?? "");
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? "예정");
+  const [priority, setPriority] = useState(task?.priority ?? false);
   const [memo, setMemo] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -76,6 +78,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
       end_date: needsEndDate ? endDate || null : null,
       end_time: needsEndTime ? endTime || null : null,
       status,
+      priority,
     };
 
     const result = taskFormSchema.safeParse(payload);
@@ -121,6 +124,7 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
         start_date: null,
         end_date: null,
         status: "예정",
+        priority: false,
       });
       setProjectId(project.id);
       setCreatingProject(false);
@@ -360,6 +364,13 @@ export function TaskForm({ task, initialDate, initialProjectId, onDone }: TaskFo
             </option>
           ))}
         </select>
+      </Field>
+
+      <Field label="우선순위">
+        <div className="flex items-center justify-between rounded-md border border-neutral-300 px-2.5 py-1.5">
+          <span className="text-sm text-neutral-700">{priority ? "우선순위 높음 — 제목이 빨간색으로 표시됩니다" : "우선순위 표시 안 함"}</span>
+          <Toggle checked={priority} onChange={setPriority} activeClassName="bg-red-800" />
+        </div>
       </Field>
 
       {task ? (

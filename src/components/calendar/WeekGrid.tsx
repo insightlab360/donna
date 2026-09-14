@@ -2,6 +2,7 @@
 
 import { formatTaskWhen, getTasksOnDate, isMultiDayTask, sortForPeriod } from "@/lib/tasks-logic";
 import { cn } from "@/lib/utils";
+import { PRIORITY_TEXT_CLASS } from "@/lib/status-style";
 import { CHIP_STYLE } from "./TaskChip";
 import { computeWeekSpans } from "./weekSpans";
 import type { Task } from "@/lib/types";
@@ -63,7 +64,7 @@ export function WeekGrid({ dates, today, tasks, onDayClick, onTaskClick }: WeekG
                       className={cn("mb-1 block w-full rounded px-1.5 py-1 text-left", CHIP_STYLE[task.status])}
                     >
                       <p className="text-[9px] opacity-70">{formatTaskWhen(task)}</p>
-                      <p className="text-[11px] font-medium leading-[1.3]">{task.title}</p>
+                      <p className={cn("text-[11px] font-medium leading-[1.3]", task.priority && PRIORITY_TEXT_CLASS)}>{task.title}</p>
                     </button>
                   ))
                 )}
@@ -77,7 +78,11 @@ export function WeekGrid({ dates, today, tasks, onDayClick, onTaskClick }: WeekG
                 e.stopPropagation();
                 onTaskClick(bar.task);
               }}
-              className={cn("absolute h-5 overflow-hidden rounded px-1.5 text-left text-[11px] leading-5", CHIP_STYLE[bar.task.status])}
+              className={cn(
+                "absolute h-5 overflow-hidden rounded px-1.5 text-left text-[11px] leading-5",
+                CHIP_STYLE[bar.task.status],
+                bar.task.priority && PRIORITY_TEXT_CLASS
+              )}
               style={{
                 left: `calc(${(bar.startCol / 7) * 100}% + 3px)`,
                 width: `calc(${((bar.endCol - bar.startCol + 1) / 7) * 100}% - 6px)`,

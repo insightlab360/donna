@@ -15,6 +15,7 @@ export const taskFormSchema = z
     end_date: dateStr.nullable(),
     end_time: timeStr.nullable(),
     status: z.enum(TASK_STATUSES),
+    priority: z.boolean(),
   })
   .superRefine((data, ctx) => {
     if (data.date_mode === "none") return;
@@ -49,6 +50,7 @@ export const projectFormSchema = z
     start_date: dateStr.nullable(),
     end_date: dateStr.nullable(),
     status: z.enum(PROJECT_STATUSES),
+    priority: z.boolean(),
   })
   .superRefine((data, ctx) => {
     if (data.start_date && data.end_date && data.end_date < data.start_date) {

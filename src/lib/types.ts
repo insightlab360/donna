@@ -18,6 +18,7 @@ export interface Project {
   start_date: string | null;
   end_date: string | null;
   status: ProjectStatus;
+  priority: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +36,7 @@ export interface Task {
   end_time: string | null;
   due_date: string | null;
   status: TaskStatus;
+  priority: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +49,7 @@ export interface ProjectInput {
   start_date: string | null;
   end_date: string | null;
   status: ProjectStatus;
+  priority: boolean;
 }
 
 export interface ProjectStats {

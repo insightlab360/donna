@@ -14,6 +14,8 @@ import {
 } from "@/lib/date";
 import { WorkTypeBadge } from "@/components/ui/Badge";
 import { projectDisplayName } from "@/lib/tasks-logic";
+import { PRIORITY_TEXT_CLASS } from "@/lib/status-style";
+import { cn } from "@/lib/utils";
 import type { WorkType } from "@/lib/types";
 
 type Preset = "today" | "thisWeek" | "thisMonth" | "custom";
@@ -45,6 +47,7 @@ interface ActivityEntry {
   kind: "Task" | "프로젝트";
   title: string;
   workType: WorkType;
+  priority: boolean;
 }
 
 export default function ActivityPage() {
@@ -63,7 +66,17 @@ export default function ActivityPage() {
     const taskEntries: ActivityEntry[] = taskNotes.flatMap((n) => {
       const task = tasks.find((t) => t.id === n.task_id);
       if (!task) return [];
-      return [{ id: n.id, createdAt: n.created_at, content: n.content, kind: "Task" as const, title: task.title, workType: task.work_type }];
+      return [
+        {
+          id: n.id,
+          createdAt: n.created_at,
+          content: n.content,
+          kind: "Task" as const,
+          title: task.title,
+          workType: task.work_type,
+          priority: task.priority,
+        },
+      ];
     });
     const projectEntries: ActivityEntry[] = projectNotes.flatMap((n) => {
       const project = projects.find((p) => p.id === n.project_id);
@@ -76,6 +89,7 @@ export default function ActivityPage() {
           kind: "프로젝트" as const,
           title: projectDisplayName(project.name),
           workType: project.work_type,
+          priority: project.priority,
         },
       ];
     });
@@ -161,7 +175,7 @@ Task로 돌아가기
                     <div className="flex items-center gap-1.5 text-xs text-neutral-500">
                       <WorkTypeBadge workType={entry.workType} />
                       <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[11px]">{entry.kind}</span>
-                      <span className="truncate font-medium text-neutral-700">{entry.title}</span>
+                      <span className={cn("truncate font-medium text-neutral-700", entry.priority && PRIORITY_TEXT_CLASS)}>{entry.title}</span>
                       <span className="ml-auto shrink-0 text-neutral-400">
                         {new Date(entry.createdAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
                       </span>

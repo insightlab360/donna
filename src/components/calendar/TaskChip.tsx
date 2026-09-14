@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { STATUS_CHIP_STYLE as CHIP_STYLE } from "@/lib/status-style";
+import { PRIORITY_TEXT_CLASS, STATUS_CHIP_STYLE as CHIP_STYLE } from "@/lib/status-style";
 import type { Task } from "@/lib/types";
 
 export { CHIP_STYLE };
@@ -15,7 +15,8 @@ export function TaskChip({ task, onClick }: { task: Task; onClick: () => void })
       }}
       className={cn(
         "block max-h-[2.6em] w-full overflow-hidden break-words rounded px-0.5 py-0.5 text-left text-[10px] leading-[1.3]",
-        CHIP_STYLE[task.status]
+        CHIP_STYLE[task.status],
+        task.priority && PRIORITY_TEXT_CLASS
       )}
       title={task.title}
     >

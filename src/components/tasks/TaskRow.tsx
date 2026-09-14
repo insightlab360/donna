@@ -3,7 +3,7 @@
 import { useData } from "@/lib/data-context";
 import { formatTaskCardWhen, isDueToday, projectDisplayName } from "@/lib/tasks-logic";
 import { todayKST } from "@/lib/date";
-import { STATUS_CHIP_STYLE } from "@/lib/status-style";
+import { PRIORITY_TEXT_CLASS, STATUS_CHIP_STYLE } from "@/lib/status-style";
 import { cn } from "@/lib/utils";
 import { StatusBadge, WorkTypeBadge } from "@/components/ui/Badge";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/types";
@@ -35,7 +35,7 @@ export function TaskRow({ task, onClick, quickStatus, showDueBadge }: TaskRowPro
             <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-medium text-white">오늘 마감</span>
           )}
         </div>
-        <p className="mt-0.5 truncate text-sm font-medium text-black">{task.title}</p>
+        <p className={cn("mt-0.5 truncate text-sm font-medium text-black", task.priority && PRIORITY_TEXT_CLASS)}>{task.title}</p>
         <div className="mt-1 flex items-center gap-1.5 text-xs text-neutral-500">
           <WorkTypeBadge workType={task.work_type} />
           {project && <span className="truncate">{projectDisplayName(project.name)}</span>}

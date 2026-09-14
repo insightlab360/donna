@@ -13,7 +13,7 @@ import {
   todayKST,
 } from "@/lib/date";
 import { formatTaskCardWhen, isDueInRange, projectDisplayName, sortForPeriod } from "@/lib/tasks-logic";
-import { STATUS_CHIP_STYLE } from "@/lib/status-style";
+import { PRIORITY_TEXT_CLASS, STATUS_CHIP_STYLE } from "@/lib/status-style";
 import { WorkTypeBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { WorkTypeFilterBar, matchesWorkTypeFilter } from "@/components/ui/WorkTypeFilterBar";
@@ -149,7 +149,11 @@ export function PeriodQuery() {
                   <p
                     className={
                       "mt-0.5 truncate text-sm font-medium " +
-                      (task.status === "완료" || task.status === "드랍" ? "text-neutral-400 line-through" : "text-black")
+                      (task.status === "완료" || task.status === "드랍"
+                        ? "text-neutral-400 line-through"
+                        : task.priority
+                          ? `text-black ${PRIORITY_TEXT_CLASS}`
+                          : "text-black")
                     }
                   >
                     {task.title}

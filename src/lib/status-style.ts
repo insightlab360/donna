@@ -12,3 +12,6 @@ export const STATUS_CHIP_STYLE: Record<TaskStatus, string> = {
   보류: "border border-neutral-200 bg-neutral-200 text-neutral-600",
   드랍: "border border-neutral-50 bg-neutral-50 text-neutral-300",
 };
+
+/** 우선순위가 높은 프로젝트/Task의 제목 색상 — 형광 없는 차분한 톤. `!` 로 다른 text-* 클래스보다 항상 우선한다. */
+export const PRIORITY_TEXT_CLASS = "!text-red-800";

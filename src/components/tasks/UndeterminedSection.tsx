@@ -8,6 +8,8 @@ import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { ProjectFormDrawer } from "@/components/projects/ProjectFormDrawer";
 import { WorkTypeBadge } from "@/components/ui/Badge";
 import { matchesWorkTypeFilter, type WorkTypeFilterValue } from "@/components/ui/WorkTypeFilterBar";
+import { PRIORITY_TEXT_CLASS } from "@/lib/status-style";
+import { cn } from "@/lib/utils";
 import type { Task } from "@/lib/types";
 
 export function UndeterminedSection({ workType = "all" }: { workType?: WorkTypeFilterValue }) {
@@ -52,7 +54,9 @@ export function UndeterminedSection({ workType = "all" }: { workType?: WorkTypeF
                 onClick={() => setEditingProjectId(project.id)}
                 className="flex items-center justify-between rounded-md border border-neutral-100 px-3 py-2 text-left text-sm hover:bg-neutral-50"
               >
-                <span className="truncate font-medium text-black">{projectDisplayName(project.name)}</span>
+                <span className={cn("truncate font-medium text-black", project.priority && PRIORITY_TEXT_CLASS)}>
+                  {projectDisplayName(project.name)}
+                </span>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <WorkTypeBadge workType={project.work_type} />
                   <span className="text-xs text-neutral-400">{project.status}</span>

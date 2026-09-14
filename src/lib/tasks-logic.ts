@@ -150,3 +150,29 @@ export function computeProjectStats(project: Project, allTasks: Task[]): Project
 
   return { total, scheduled, inProgress, done, onHold, dropped, progress, incompleteTasks };
 }
+
+/** 1~4. `dateStr`의 'yyyy-MM-dd'에서 월만 보고 분기를 계산한다. */
+export function quarterOfDate(dateStr: string): 1 | 2 | 3 | 4 {
+  const month = Number(dateStr.slice(5, 7));
+  return (Math.ceil(month / 3) as 1 | 2 | 3 | 4) || 1;
+}
+
+/** `dateStr`이 주어진 연도(및 분기, "all"이면 연도만)에 속하는지. */
+export function isDateInYearQuarter(dateStr: string, year: number, quarter: number | "all"): boolean {
+  if (Number(dateStr.slice(0, 4)) !== year) return false;
+  return quarter === "all" || quarterOfDate(dateStr) === quarter;
+}
+
+export function taskMatchesYearQuarter(task: Task, year: number, quarter: number | "all"): boolean {
+  return task.due_date !== null && isDateInYearQuarter(task.due_date, year, quarter);
+}
+
+/**
+ * 프로젝트 자체에 날짜(시작일/마감일)가 있으면 그 날짜로 판단하고, 없으면 프로젝트에 속한
+ * Task들의 날짜를 따른다(하나라도 해당 연도/분기에 속하면 매치).
+ */
+export function projectMatchesYearQuarter(project: Project, projectTasks: Task[], year: number, quarter: number | "all"): boolean {
+  const ownDate = project.start_date ?? project.end_date;
+  if (ownDate) return isDateInYearQuarter(ownDate, year, quarter);
+  return projectTasks.some((t) => taskMatchesYearQuarter(t, year, quarter));
+}

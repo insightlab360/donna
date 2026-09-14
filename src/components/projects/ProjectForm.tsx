@@ -5,6 +5,7 @@ import { useData } from "@/lib/data-context";
 import { PROJECT_STATUSES, WORK_TYPES, type Project, type ProjectStatus, type WorkType } from "@/lib/types";
 import { projectFormSchema } from "@/lib/validation";
 import { Button } from "@/components/ui/Button";
+import { Toggle } from "@/components/ui/Toggle";
 import { NotesSection } from "@/components/notes/NotesSection";
 
 interface ProjectFormProps {
@@ -20,6 +21,7 @@ export function ProjectForm({ project, onDone }: ProjectFormProps) {
   const [startDate, setStartDate] = useState(project?.start_date ?? "");
   const [endDate, setEndDate] = useState(project?.end_date ?? "");
   const [status, setStatus] = useState<ProjectStatus>(project?.status ?? "예정");
+  const [priority, setPriority] = useState(project?.priority ?? false);
   const [memo, setMemo] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -36,6 +38,7 @@ export function ProjectForm({ project, onDone }: ProjectFormProps) {
       start_date: startDate || null,
       end_date: endDate || null,
       status,
+      priority,
     };
 
     const result = projectFormSchema.safeParse(payload);
@@ -133,6 +136,14 @@ export function ProjectForm({ project, onDone }: ProjectFormProps) {
             </option>
           ))}
         </select>
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-neutral-600">우선순위</span>
+        <div className="flex items-center justify-between rounded-md border border-neutral-300 px-2.5 py-1.5">
+          <span className="text-sm text-neutral-700">{priority ? "우선순위 높음 — 제목이 빨간색으로 표시됩니다" : "우선순위 표시 안 함"}</span>
+          <Toggle checked={priority} onChange={setPriority} activeClassName="bg-red-800" />
+        </div>
       </label>
 
       {project ? (

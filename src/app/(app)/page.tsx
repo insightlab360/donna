@@ -22,6 +22,8 @@ import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { UndeterminedSection } from "@/components/tasks/UndeterminedSection";
 import { Button } from "@/components/ui/Button";
 import { WorkTypeFilterBar, matchesWorkTypeFilter } from "@/components/ui/WorkTypeFilterBar";
+import { PRIORITY_TEXT_CLASS } from "@/lib/status-style";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { tasks: allTasks, projects: allProjects, loading } = useData();
@@ -116,7 +118,9 @@ export default function DashboardPage() {
                 {inProgressProjects.map(({ project, stats }) => (
                   <div key={project.id} className="rounded-md border border-neutral-100 p-3">
                     <div className="flex items-center justify-between">
-                      <p className="truncate text-sm font-medium text-black">{projectDisplayName(project.name)}</p>
+                      <p className={cn("truncate text-sm font-medium text-black", project.priority && PRIORITY_TEXT_CLASS)}>
+                        {projectDisplayName(project.name)}
+                      </p>
                       <span className="text-xs font-medium text-neutral-500">{stats.progress}%</span>
                     </div>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">

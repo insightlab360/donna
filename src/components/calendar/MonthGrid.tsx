@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { getTasksOnDate, isMultiDayTask, sortForPeriod } from "@/lib/tasks-logic";
 import { cn } from "@/lib/utils";
+import { PRIORITY_TEXT_CLASS } from "@/lib/status-style";
 import { CHIP_STYLE, TaskChip } from "./TaskChip";
 import { computeWeekSpans } from "./weekSpans";
 import type { Task } from "@/lib/types";
@@ -97,7 +98,8 @@ export function MonthGrid({ dates, today, tasks, anchorMonth, onDayClick, onTask
                 }}
                 className={cn(
                   "absolute h-4 overflow-hidden rounded px-1 text-left text-[10px] leading-4",
-                  CHIP_STYLE[bar.task.status]
+                  CHIP_STYLE[bar.task.status],
+                  bar.task.priority && PRIORITY_TEXT_CLASS
                 )}
                 style={{
                   left: `calc(${(bar.startCol / 7) * 100}% + 2px)`,
